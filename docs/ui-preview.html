@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Melbourne Council Explorer — UI Preview</title>
+<style>
+  :root {
+    --primary: #1B3A6B;
+    --accent: #F4A623;
+    --bg: #F8F6F2;
+    --white: #ffffff;
+    --gray-100: #f1f0ee;
+    --gray-200: #e0deda;
+    --gray-400: #9e9b95;
+    --gray-600: #5c5a56;
+    --text: #1a1a1a;
+    --border: #d4d1cb;
+    --shadow: 0 2px 8px rgba(0,0,0,0.10);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ddd8ce;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    padding: 40px 20px;
+  }
+
+  h1.page-title {
+    text-align: center;
+    font-size: 22px;
+    color: #444;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .page-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 48px;
+  }
+
+  .page-section {
+    margin-bottom: 64px;
+  }
+
+  .section-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 10px;
+  }
+
+  /* Browser chrome frame */
+  .browser-frame {
+    width: 700px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    background: var(--white);
+  }
+
+  .browser-chrome {
+    background: #e8e6e2;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  .browser-dots {
+    display: flex; gap: 5px;
+  }
+  .browser-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+  }
+  .dot-red { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green { background: #28c840; }
+  .browser-url {
+    flex: 1;
+    background: #fff;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #555;
+    border: 1px solid #ccc;
+  }
+
+  /* App shell */
+  .app-content {
+    background: var(--bg);
+    min-height: 500px;
+  }
+
+  /* Navbar */
+  .navbar {
+    background: var(--primary);
+    color: white;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    gap: 32px;
+  }
+  .navbar-brand {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .navbar-brand-icon {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .navbar-links {
+    display: flex; gap: 4px; margin-left: auto;
+  }
+  .nav-link {
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav-link.active, .nav-link:hover {
+    color: white;
+    background: rgba(255,255,255,0.12);
+  }
+
+  /* ===== PAGE 1: HOMEPAGE ===== */
+  .map-area {
+    position: relative;
+    background: #c8d8e8;
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .map-bg-text {
+    font-size: 18px;
+    color: #7a9ab5;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .map-overlay-title {
+    position: absolute;
+    top: 20px; left: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .map-overlay-title span {
+    display: block;
+    font-size: 11px;
+    color: var(--gray-600);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .map-legend {
+    position: absolute;
+    bottom: 20px; right: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    font-size: 12px;
+  }
+  .legend-title {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 4px;
+    color: var(--gray-600);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .map-tooltip {
+    position: absolute;
+    top: 120px; left: 45%;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  }
+  .map-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: -7px; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom: none;
+    border-top: 7px solid var(--primary);
+  }
+  .map-council-dots {
+    position: absolute;
+    inset: 0;
+  }
+  .council-dot {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+  .map-stats-bar {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    gap: 32px;
+  }
+  .map-stat {
+    font-size: 13px;
+    color: var(--gray-600);
+  }
+  .map-stat strong {
+    display: block;
+    font-size: 18px;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* ===== PAGE 2: COUNCIL LIST ===== */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px 0;
+  }
+  .page-header h2 {
+    font-size: 20px;
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 16px;
+  }
+  .filter-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: none;
+  }
+  .tab {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--gray-600);
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: none;
+  }
+  .tab.active {
+    background: var(--bg);
+    color: var(--primary);
+    font-weight: 600;
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+  }
+  .list-body {
+    padding: 20px 24px;
+  }
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .search-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--gray-600);
+    background: white;
+  }
+  .councils-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .council-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .council-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .council-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .council-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .region-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #e8f0fb;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .council-card-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+  .council-card-stat strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .card-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .events-chip {
+    font-size: 11px;
+    background: #fff5e0;
+    color: #a06800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .arrow-link {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ===== PAGE 3: COUNCIL DETAIL ===== */
+  .detail-header {
+    background: var(--primary);
+    padding: 24px 24px 0;
+    color: white;
+  }
+  .detail-header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .back-btn {
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+  }
+  .detail-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0;
+  }
+  .detail-header .region-badge {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 11px;
+  }
+  .detail-header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+  }
+  .detail-tabs {
+    display: flex;
+    gap: 2px;
+  }
+  .detail-tab {
+    padding: 9px 16px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .detail-tab.active {
+    color: white;
+    font-weight: 600;
+    border-bottom-color: var(--accent);
+  }
+  .detail-body {
+    padding: 20px 24px;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px;
+    text-align: center;
+  }
+  .kpi-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 2px;
+  }
+  .kpi-label {
+    font-size: 11px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .kpi-sub {
+    font-size: 10px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  .gender-bar-container {
+    border-radius: 4px;
+    overflow: hidden;
+    height: 28px;
+    display: flex;
+    margin-bottom: 8px;
+  }
+  .gender-male { background: #3a7bd5; }
+  .gender-female { background: #e8698b; }
+  .gender-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+  .gender-label { display: flex; align-items: center; gap: 5px; }
+  .gender-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .age-display {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .age-number {
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--primary);
+  }
+  .age-unit {
+    font-size: 14px;
+    color: var(--gray-600);
+  }
+  .age-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--gray-200);
+    margin-top: 10px;
+    position: relative;
+  }
+  .age-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    width: 52%;
+  }
+  .age-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--gray-400);
+    margin-top: 4px;
+  }
+
+  /* ===== PAGE 4: EVENTS ===== */
+  .events-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .events-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  .events-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-select {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 13px;
+    color: var(--gray-600);
+    background: white;
+    appearance: none;
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+  .time-btns {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .time-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--gray-600);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    background: white;
+  }
+  .time-btn:last-child { border-right: none; }
+  .time-btn.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+  }
+  .events-body {
+    padding: 16px 24px;
+  }
+  .events-count {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .events-count strong { color: var(--text); }
+  .event-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .event-date-block {
+    width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+    background: var(--gray-100);
+    border-radius: 6px;
+    padding: 6px 4px;
+  }
+  .event-month {
+    font-size: 10px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .event-day {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+  }
+  .event-info { flex: 1; }
+  .event-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .event-meta {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .event-meta-item { display: flex; align-items: center; gap: 3px; }
+  .event-tags { display: flex; gap: 6px; align-items: center; }
+  .event-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .tag-children { background: #fce8f0; color: #c0386b; }
+  .tag-english { background: #e8f4e8; color: #2e7a2e; }
+  .tag-digital { background: #e8f0fb; color: #1b4eb8; }
+  .tag-craft { background: #f5eef8; color: #7b3aab; }
+  .book-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .event-time {
+    font-size: 12px;
+    color: var(--gray-600);
+    font-weight: 500;
+  }
+
+  /* ===== PAGE 5: COMPARE ===== */
+  .compare-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .compare-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 16px;
+  }
+  .compare-selectors {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .compare-select {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    background: white;
+    font-weight: 600;
+  }
+  .compare-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .compare-body {
+    padding: 20px 24px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .compare-table th {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .compare-table th:first-child {
+    width: 140px;
+  }
+  .compare-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--text);
+  }
+  .compare-table tr:last-child td {
+    border-bottom: none;
+  }
+  .compare-table tr:nth-child(even) td {
+    background: var(--gray-100);
+  }
+  .compare-table .metric-col {
+    font-weight: 600;
+    color: var(--gray-600);
+  }
+  .compare-table .best {
+    color: #2e7a2e;
+    font-weight: 700;
+  }
+  .compare-badge {
+    display: inline-block;
+    font-size: 10px;
+    background: #e8f4e8;
+    color: #2e7a2e;
+    padding: 1px 6px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .compare-note {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Melbourne Council Explorer — UI Preview</h1>
+<p class="page-subtitle">All 5 pages · Design spec preview · Not production code</p>
+
+<!-- ===================================================== -->
+<!-- PAGE 1: HOMEPAGE -->
+<!-- ===================================================== -->
+<div class="page-section">
+  <div class="section-label">Page 1 of 5 — Homepage (Map View)</div>
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <div class="browser-dots">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+      </div>
+      <div class="browser-url">melbournecouncils.au</div>
+    </div>
+    <div class="app-content">
+      <!-- Navbar -->
+      <div class="navbar">
+        <div class="navbar-brand">
+          <div class="navbar-brand-icon">🗺</div>
+          Melbourne Council Explorer
+        </div>
+        <div class="navbar-links">
+          <div class="nav-link active">Home</div>
+          <div class="nav-link">Councils</div>
+          <div class="nav-link">Events</div>
+          <div class="nav-link">Compare</div>
+        </div>
+      </div>
+
+      <!-- Map area -->
+      <div class="map-area">
+        <!-- Simulated council dots -->
+        <div class="map-council-dots">
+          <div class="council-dot" style="background:#7c4dcc; top:40%; left:38%;"></div>
+          <div class="council-dot" style="background:#7c4dcc; top:35%; left:44%;"></div>
+          <div class="council-dot" style="background:#7c4dcc; top:42%; left:41%;"></div>
+          <div class="council-dot" style="background:#3a7bd5; top:38%; left:62%;"></div>
+          <div class="council-dot" style="background:#3a7bd5; top:32%; left:68%;"></div>
+          <div class="council-dot" style="background:#3a7bd5; top:44%; left:65%;"></div>
+          <div class="council-dot" style="background:#3a7bd5; top:50%; left:72%;"></div>
+          <div class="council-dot" style="background:#27ae60; top:58%; left:58%;"></div>
+          <div class="council-dot" style="background:#27ae60; top:62%; left:64%;"></div>
+          <div class="council-dot" style="background:#27ae60; top:65%; left:50%;"></div>
+          <div class="council-dot" style="background:#e67e22; top:22%; left:48%;"></div>
+          <div class="council-dot" style="background:#e67e22; top:18%; left:55%;"></div>
+          <div class="council-dot" style="background:#e67e22; top:25%; left:38%;"></div>
+          <div class="council-dot" style="background:#e74c3c; top:38%; left:22%;"></div>
+          <div class="council-dot" style="background:#e74c3c; top:42%; left:28%;"></div>
+          <div class="council-dot" style="background:#7f8c8d; top:20%; left:22%;"></div>
+          <div class="council-dot" style="background:#7f8c8d; top:72%; left:30%;"></div>
+        </div>
+        <div style="font-size:15px; color:#6a8fa8; font-weight:600; letter-spacing:0.5px; user-select:none;">Interactive Mapbox Map</div>
+
+        <!-- Overlay title card -->
+        <div class="map-overlay-title">
+          Melbourne Metro Area
+          <span>31 local government areas</span>
+        </div>
+
+        <!-- Hover tooltip -->
+        <div class="map-tooltip">Monash — Pop: 195,000</div>
+
+        <!-- Legend -->
+        <div class="map-legend">
+          <div class="legend-title">Regions</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7c4dcc;"></div>Inner</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3a7bd5;"></div>Eastern</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#27ae60;"></div>Southern</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e67e22;"></div>Northern</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div>Western</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7f8c8d;"></div>Outer</div>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="map-stats-bar">
+        <div class="map-stat"><strong>31</strong>Councils</div>
+        <div class="map-stat"><strong>5.1M</strong>Population</div>
+        <div class="map-stat"><strong>184</strong>Libraries</div>
+        <div class="map-stat"><strong>2,340</strong>Events this month</div>
+        <div class="map-stat" style="margin-left:auto; display:flex; align-items:center; font-size:13px; color:var(--primary); font-weight:600; cursor:pointer;">View all councils →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- PAGE 2: COUNCIL LIST -->
+<!-- ===================================================== -->
+<div class="page-section">
+  <div class="section-label">Page 2 of 5 — Council List (/councils)</div>
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <div class="browser-dots">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+      </div>
+      <div class="browser-url">melbournecouncils.au/councils</div>
+    </div>
+    <div class="app-content">
+      <div class="navbar">
+        <div class="navbar-brand">
+          <div class="navbar-brand-icon">🗺</div>
+          Melbourne Council Explorer
+        </div>
+        <div class="navbar-links">
+          <div class="nav-link">Home</div>
+          <div class="nav-link active">Councils</div>
+          <div class="nav-link">Events</div>
+          <div class="nav-link">Compare</div>
+        </div>
+      </div>
+
+      <div class="page-header">
+        <h2>All Councils</h2>
+        <p>Browse and compare Melbourne's 31 local government areas</p>
+        <div class="filter-tabs">
+          <div class="tab">All <span style="font-size:11px; color:#aaa;">(31)</span></div>
+          <div class="tab">Inner</div>
+          <div class="tab active" style="background:var(--bg); color:var(--primary); font-weight:600; border:1px solid var(--border); border-bottom-color:var(--bg);">Eastern</div>
+          <div class="tab">Southern</div>
+          <div class="tab">Northern</div>
+          <div class="tab">Western</div>
+          <div class="tab">Outer</div>
+        </div>
+      </div>
+
+      <div class="list-body">
+        <div class="search-row">
+          <div class="search-input" style="display:flex; align-items:center; gap:8px;">
+            <span style="color:#aaa; font-size:14px;">🔍</span>
+            <span style="color:#aaa; font-size:13px;">Search councils…</span>
+          </div>
+        </div>
+
+        <div style="font-size:13px; color:var(--gray-600); margin-bottom:14px;">Showing <strong>7 councils</strong> in Eastern region</div>
+
+        <div class="councils-grid">
+          <!-- Card 1 -->
+          <div class="council-card">
+            <div class="council-card-top">
+              <div class="council-name">Boroondara</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>178,042</strong>Population</div>
+              <div class="council-card-stat"><strong>60.8 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 18 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="council-card">
+            <div class="council-card-top">
+              <div class="council-name">Manningham</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>126,788</strong>Population</div>
+              <div class="council-card-stat"><strong>114.8 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 9 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div class="council-card">
+            <div class="council-card-top">
+              <div class="council-name">Whitehorse</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>175,088</strong>Population</div>
+              <div class="council-card-stat"><strong>64.3 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 21 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+          <!-- Card 4 -->
+          <div class="council-card">
+            <div class="council-card-top">
+              <div class="council-name">Maroondah</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>117,466</strong>Population</div>
+              <div class="council-card-stat"><strong>61.2 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 14 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+          <!-- Card 5 -->
+          <div class="council-card">
+            <div class="council-card-top">
+              <div class="council-name">Knox</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>160,673</strong>Population</div>
+              <div class="council-card-stat"><strong>114.2 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 11 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+          <!-- Card 6 -->
+          <div class="council-card" style="border-color:var(--primary); box-shadow:0 0 0 2px rgba(27,58,107,0.12);">
+            <div class="council-card-top">
+              <div class="council-name">Monash</div>
+              <div class="region-badge">Eastern</div>
+            </div>
+            <div class="council-card-stats">
+              <div class="council-card-stat"><strong>195,432</strong>Population</div>
+              <div class="council-card-stat"><strong>82.0 km²</strong>Area</div>
+            </div>
+            <div class="card-footer">
+              <span class="events-chip">⚡ 23 events</span>
+              <span class="arrow-link">View →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- PAGE 3: COUNCIL DETAIL -->
+<!-- ===================================================== -->
+<div class="page-section">
+  <div class="section-label">Page 3 of 5 — Council Detail (/councils/monash)</div>
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <div class="browser-dots">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+      </div>
+      <div class="browser-url">melbournecouncils.au/councils/monash</div>
+    </div>
+    <div class="app-content">
+      <div class="navbar">
+        <div class="navbar-brand">
+          <div class="navbar-brand-icon">🗺</div>
+          Melbourne Council Explorer
+        </div>
+        <div class="navbar-links">
+          <div class="nav-link">Home</div>
+          <div class="nav-link active">Councils</div>
+          <div class="nav-link">Events</div>
+          <div class="nav-link">Compare</div>
+        </div>
+      </div>
+
+      <!-- Detail Header -->
+      <div class="detail-header">
+        <div class="detail-header-top">
+          <div class="back-btn">← All councils</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+          <h2 style="font-size:26px; font-weight:800; color:white;">Monash</h2>
+          <div class="region-badge" style="background:rgba(255,255,255,0.18); color:white; font-size:12px; padding:3px 10px;">Eastern</div>
+        </div>
+        <p>City of Monash · ABN 67 534 006 657 · Established 1994</p>
+        <div class="detail-tabs">
+          <div class="detail-tab active">Overview</div>
+          <div class="detail-tab">Library Events <span style="background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:10px; font-size:11px; margin-left:3px;">23</span></div>
+          <div class="detail-tab">Facilities</div>
+        </div>
+      </div>
+
+      <!-- Detail Body -->
+      <div class="detail-body">
+        <!-- KPI cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-value">195,432</div>
+            <div class="kpi-label">Population</div>
+            <div class="kpi-sub">Census 2021</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">82.0</div>
+            <div class="kpi-label">Area (km²)</div>
+            <div class="kpi-sub">Land area</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">2,383</div>
+            <div class="kpi-label">Density /km²</div>
+            <div class="kpi-sub">Persons per km²</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">2021</div>
+            <div class="kpi-label">Data year</div>
+            <div class="kpi-sub">ABS Census</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="charts-row">
+          <!-- Gender -->
+          <div class="chart-card">
+            <div class="chart-title">Gender distribution</div>
+            <div class="gender-bar-container">
+              <div class="gender-male" style="width:49.2%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:700;">49.2%</div>
+              <div class="gender-female" style="width:50.8%; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:700;">50.8%</div>
+            </div>
+            <div class="gender-labels">
+              <div class="gender-label">
+                <div class="gender-dot" style="background:#3a7bd5;"></div>
+                Male — 49.2%
+              </div>
+              <div class="gender-label">
+                <div class="gender-dot" style="background:#e8698b;"></div>
+                Female — 50.8%
+              </div>
+            </div>
+          </div>
+
+          <!-- Age -->
+          <div class="chart-card">
+            <div class="chart-title">Median age</div>
+            <div class="age-display">
+              <span class="age-number">38</span>
+              <span class="age-unit">years</span>
+            </div>
+            <div class="age-bar"><div class="age-bar-fill"></div></div>
+            <div class="age-range">
+              <span>Metro avg: 35</span>
+              <span>Vic avg: 37</span>
+              <span>Oldest: 46</span>
+            </div>
+            <div style="font-size:12px; color:var(--gray-600); margin-top:10px;">Slightly above Melbourne average of 35 years</div>
+          </div>
+        </div>
+
+        <!-- Libraries row -->
+        <div class="chart-card" style="margin-bottom:0;">
+          <div class="chart-title" style="margin-bottom:12px;">Libraries (3 branches)</div>
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1; background:var(--gray-100); border-radius:6px; padding:12px; font-size:13px;">
+              <div style="font-weight:700; color:var(--primary); margin-bottom:2px;">Clayton Library</div>
+              <div style="color:var(--gray-600); font-size:12px;">9 Cooke St, Clayton · Main branch</div>
+            </div>
+            <div style="flex:1; background:var(--gray-100); border-radius:6px; padding:12px; font-size:13px;">
+              <div style="font-weight:700; color:var(--primary); margin-bottom:2px;">Glen Waverley Library</div>
+              <div style="color:var(--gray-600); font-size:12px;">25 O'Sullivan Rd · Largest branch</div>
+            </div>
+            <div style="flex:1; background:var(--gray-100); border-radius:6px; padding:12px; font-size:13px;">
+              <div style="font-weight:700; color:var(--primary); margin-bottom:2px;">Oakleigh Library</div>
+              <div style="color:var(--gray-600); font-size:12px;">Drummond St · Community hub</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- PAGE 4: EVENTS CALENDAR -->
+<!-- ===================================================== -->
+<div class="page-section">
+  <div class="section-label">Page 4 of 5 — Events Calendar (/events)</div>
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <div class="browser-dots">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+      </div>
+      <div class="browser-url">melbournecouncils.au/events</div>
+    </div>
+    <div class="app-content">
+      <div class="navbar">
+        <div class="navbar-brand">
+          <div class="navbar-brand-icon">🗺</div>
+          Melbourne Council Explorer
+        </div>
+        <div class="navbar-links">
+          <div class="nav-link">Home</div>
+          <div class="nav-link">Councils</div>
+          <div class="nav-link active">Events</div>
+          <div class="nav-link">Compare</div>
+        </div>
+      </div>
+
+      <div class="events-header">
+        <h2>Melbourne Library Events</h2>
+        <div class="events-filters">
+          <select class="filter-select">
+            <option>All councils</option>
+            <option>Monash</option>
+          </select>
+          <select class="filter-select">
+            <option>All categories</option>
+            <option>Children</option>
+          </select>
+          <div class="time-btns">
+            <div class="time-btn">Today</div>
+            <div class="time-btn active">This week</div>
+            <div class="time-btn">This month</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="events-body">
+        <div class="events-count"><strong>47 events</strong> found for this week across all councils</div>
+
+        <!-- Event 1 -->
+        <div class="event-card">
+          <div class="event-date-block">
+            <div class="event-month">Jun</div>
+            <div class="event-day">11</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">Storytime for Toddlers</div>
+            <div class="event-meta">
+              <span class="event-meta-item">📍 Monash · Clayton Library</span>
+              <span class="event-meta-item">🕙 Tue 11 Jun · 10:00am</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-children">Children</span>
+              <div style="margin-left:auto;"><button class="book-btn">Book</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event 2 -->
+        <div class="event-card">
+          <div class="event-date-block">
+            <div class="event-month">Jun</div>
+            <div class="event-day">12</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">English Conversation Circle</div>
+            <div class="event-meta">
+              <span class="event-meta-item">📍 Kingston · Cheltenham Library</span>
+              <span class="event-meta-item">🕑 Wed 12 Jun · 2:00pm</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-english">English</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event 3 -->
+        <div class="event-card">
+          <div class="event-date-block">
+            <div class="event-month">Jun</div>
+            <div class="event-day">13</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">Digital Literacy Workshop</div>
+            <div class="event-meta">
+              <span class="event-meta-item">📍 Moonee Valley · Flemington Library</span>
+              <span class="event-meta-item">🕒 Thu 13 Jun · 3:00pm</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-digital">Digital</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event 4 -->
+        <div class="event-card">
+          <div class="event-date-block">
+            <div class="event-month">Jun</div>
+            <div class="event-day">14</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">Baby Rhyme Time</div>
+            <div class="event-meta">
+              <span class="event-meta-item">📍 Melton · Melton Library</span>
+              <span class="event-meta-item">🕤 Fri 14 Jun · 9:30am</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-children">Children</span>
+              <div style="margin-left:auto;"><button class="book-btn">Book</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event 5 -->
+        <div class="event-card">
+          <div class="event-date-block">
+            <div class="event-month">Jun</div>
+            <div class="event-day">15</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">Craft &amp; Chat</div>
+            <div class="event-meta">
+              <span class="event-meta-item">📍 Maroondah · Ringwood Library</span>
+              <span class="event-meta-item">🕚 Sat 15 Jun · 11:00am</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-craft">Craft</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- PAGE 5: COMPARE -->
+<!-- ===================================================== -->
+<div class="page-section">
+  <div class="section-label">Page 5 of 5 — Compare Councils (/compare)</div>
+  <div class="browser-frame">
+    <div class="browser-chrome">
+      <div class="browser-dots">
+        <div class="browser-dot dot-red"></div>
+        <div class="browser-dot dot-yellow"></div>
+        <div class="browser-dot dot-green"></div>
+      </div>
+      <div class="browser-url">melbournecouncils.au/compare</div>
+    </div>
+    <div class="app-content">
+      <div class="navbar">
+        <div class="navbar-brand">
+          <div class="navbar-brand-icon">🗺</div>
+          Melbourne Council Explorer
+        </div>
+        <div class="navbar-links">
+          <div class="nav-link">Home</div>
+          <div class="nav-link">Councils</div>
+          <div class="nav-link">Events</div>
+          <div class="nav-link active">Compare</div>
+        </div>
+      </div>
+
+      <div class="compare-header">
+        <h2>Compare Councils</h2>
+        <div class="compare-selectors">
+          <select class="compare-select">
+            <option>Monash</option>
+          </select>
+          <div style="color:var(--gray-400); font-size:18px; font-weight:300;">vs</div>
+          <select class="compare-select">
+            <option>Glen Eira</option>
+          </select>
+          <div style="color:var(--gray-400); font-size:18px; font-weight:300;">vs</div>
+          <select class="compare-select">
+            <option>Bayside</option>
+          </select>
+          <button class="compare-btn">Compare</button>
+        </div>
+      </div>
+
+      <div class="compare-body">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Monash</th>
+              <th>Glen Eira</th>
+              <th>Bayside</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-col">Population</td>
+              <td class="best">195,432 <span class="compare-badge">Largest</span></td>
+              <td>158,209</td>
+              <td>105,318</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Area (km²)</td>
+              <td class="best">82.0 <span class="compare-badge">Largest</span></td>
+              <td>38.7</td>
+              <td>37.2</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Density (/km²)</td>
+              <td>2,383</td>
+              <td class="best">4,089 <span class="compare-badge">Densest</span></td>
+              <td>2,831</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Libraries</td>
+              <td class="best">3 <span class="compare-badge">Most</span></td>
+              <td>2</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Events this month</td>
+              <td class="best">23 <span class="compare-badge">Most</span></td>
+              <td>14</td>
+              <td>8</td>
+            </tr>
+            <tr>
+              <td class="metric-col">Median age</td>
+              <td>38</td>
+              <td>40</td>
+              <td class="best">42 <span class="compare-badge">Oldest</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="compare-note">Data sourced from ABS Census 2021 and council library catalogues · Last updated June 2026</div>
+
+        <!-- Mini chart hint -->
+        <div style="margin-top:20px; background:white; border-radius:var(--radius); border:1px solid var(--border); padding:16px;">
+          <div style="font-size:12px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">Population comparison</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--gray-600); margin-bottom:4px;"><span>Monash</span><span>195,432</span></div>
+              <div style="height:14px; background:var(--gray-200); border-radius:3px;"><div style="height:100%; width:100%; background:#3a7bd5; border-radius:3px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--gray-600); margin-bottom:4px;"><span>Glen Eira</span><span>158,209</span></div>
+              <div style="height:14px; background:var(--gray-200); border-radius:3px;"><div style="height:100%; width:81%; background:#27ae60; border-radius:3px;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--gray-600); margin-bottom:4px;"><span>Bayside</span><span>105,318</span></div>
+              <div style="height:14px; background:var(--gray-200); border-radius:3px;"><div style="height:100%; width:54%; background:#e67e22; border-radius:3px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

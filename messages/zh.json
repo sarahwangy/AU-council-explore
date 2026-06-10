@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "title": "墨尔本社区指南",
+    "councils": "地区列表",
+    "events": "活动日历",
+    "compare": "对比",
+    "myEvents": "我的活动"
+  },
+  "councils": {
+    "heading": "墨尔本各地区",
+    "count": "{count} 个地区",
+    "search": "搜索地区...",
+    "regions": {
+      "all": "全部",
+      "inner": "内城",
+      "eastern": "东区",
+      "southern": "南区",
+      "northern": "北区",
+      "western": "西区",
+      "outer": "外环"
+    },
+    "card": {
+      "population": "人口",
+      "libraries": "图书馆",
+      "upcomingEvents": "近期活动"
+    },
+    "empty": "未找到匹配的地区。"
+  },
+  "councilDetail": {
+    "tabs": {
+      "overview": "概览",
+      "events": "图书馆活动",
+      "facilities": "社区设施"
+    },
+    "kpi": {
+      "population": "人口",
+      "area": "面积 (km²)",
+      "density": "人口密度",
+      "dataYear": "数据年份"
+    },
+    "gender": {
+      "heading": "性别分布",
+      "male": "男性",
+      "female": "女性",
+      "medianAge": "年龄中位数"
+    },
+    "ageGroups": {
+      "heading": "年龄分布",
+      "source": "数据来源：ABS 2021年人口普查 G04",
+      "0to4": "0–4 岁",
+      "0to4sub": "幼儿园年龄",
+      "5to14": "5–14 岁",
+      "5to14sub": "小学年龄",
+      "15to19": "15–19 岁",
+      "15to19sub": "中学年龄",
+      "20to39": "20–39 岁",
+      "20to39sub": "青壮年",
+      "40to64": "40–64 岁",
+      "40to64sub": "中年",
+      "65plus": "65 岁以上",
+      "65plussub": "老年人"
+    },
+    "events": {
+      "empty": "暂无近期活动。",
+      "viewAll": "查看 {council} 的全部活动 →"
+    },
+    "facilities": {
+      "comingSoon": "社区设施数据即将上线。"
+    }
+  },
+  "events": {
+    "heading": "墨尔本图书馆活动",
+    "allCouncils": "全部地区",
+    "allCategories": "全部类别",
+    "today": "今天",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "found": "找到 {count} 个活动",
+    "noEvents": "暂无活动。",
+    "prev": "← 上一页",
+    "next": "下一页 →",
+    "page": "第 {page} / {total} 页",
+    "book": "报名"
+  },
+  "myEvents": {
+    "heading": "我的活动",
+    "favouriteCount": "已收藏 {count} 个地区",
+    "favouriteCountPlural": "已收藏 {count} 个地区",
+    "addMore": "+ 添加更多",
+    "loading": "加载中…",
+    "noEvents": "收藏的地区暂无近期活动。",
+    "totalEvents": "共 {total} 个近期活动",
+    "emptyTitle": "还没有收藏",
+    "emptyDesc": "收藏一个地区，即可在这里只看它的图书馆活动。",
+    "browseCouncils": "浏览地区 →"
+  },
+  "compare": {
+    "heading": "地区对比",
+    "select": "选择地区",
+    "button": "开始对比",
+    "metrics": {
+      "population": "人口",
+      "area": "面积 (km²)",
+      "density": "人口密度 (/km²)",
+      "libraries": "图书馆数量",
+      "events": "本月活动数",
+      "medianAge": "年龄中位数"
+    }
+  }
+}

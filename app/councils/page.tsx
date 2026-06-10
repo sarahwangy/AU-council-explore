@@ -1,11 +1,8 @@
 import { prisma } from '@/lib/prisma'
+import { getTranslations } from 'next-intl/server'
 import { CouncilCard } from '@/components/CouncilCard'
 
-const REGIONS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer']
-const REGION_LABELS: Record<string, string> = {
-  all: 'All', inner: 'Inner', eastern: 'Eastern',
-  southern: 'Southern', northern: 'Northern', western: 'Western', outer: 'Outer',
-}
+const REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer'] as const
 
 interface Props {
   searchParams: Promise<{ region?: string; q?: string }>
@@ -13,6 +10,8 @@ interface Props {
 
 export default async function CouncilsPage({ searchParams }: Props) {
   const { region: regionParam, q } = await searchParams
+  const t = await getTranslations('councils')
+
   const region = regionParam && regionParam !== 'all' ? regionParam : undefined
 
   const councils = await prisma.council.findMany({
@@ -35,10 +34,10 @@ export default async function CouncilsPage({ searchParams }: Props) {
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-(--color-primary) mb-6">Melbourne Councils</h1>
+      <h1 className="text-2xl font-bold text-(--color-primary) mb-6">{t('heading')}</h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
-        {REGIONS.map(r => (
+        {REGION_KEYS.map(r => (
           <a
             key={r}
             href={`/councils?region=${r}`}
@@ -47,13 +46,8 @@ export default async function CouncilsPage({ searchParams }: Props) {
                 ? 'bg-(--color-primary) text-white border-transparent'
                 : 'border-gray-300 hover:border-(--color-primary)'
             }`}
-            style={
-              (regionParam ?? 'all') === r
-                ? { backgroundColor: 'var(--color-primary)' }
-                : {}
-            }
           >
-            {REGION_LABELS[r]}
+            {t(`regions.${r}`)}
           </a>
         ))}
       </div>
@@ -63,12 +57,12 @@ export default async function CouncilsPage({ searchParams }: Props) {
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search councils..."
+          placeholder={t('search')}
           className="w-full max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
         />
       </form>
 
-      <p className="text-sm text-gray-500 mb-4">{filtered.length} councils</p>
+      <p className="text-sm text-gray-500 mb-4">{t('count', { count: filtered.length })}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(c => (
@@ -85,7 +79,7 @@ export default async function CouncilsPage({ searchParams }: Props) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-gray-400 py-16">No councils found.</p>
+        <p className="text-center text-gray-400 py-16">{t('empty')}</p>
       )}
     </main>
   )

@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "title": "Melbourne Council Explorer",
+    "councils": "Councils",
+    "events": "Events",
+    "compare": "Compare",
+    "myEvents": "My Events"
+  },
+  "councils": {
+    "heading": "Melbourne Councils",
+    "count": "{count} councils",
+    "search": "Search councils...",
+    "regions": {
+      "all": "All",
+      "inner": "Inner",
+      "eastern": "Eastern",
+      "southern": "Southern",
+      "northern": "Northern",
+      "western": "Western",
+      "outer": "Outer"
+    },
+    "card": {
+      "population": "Population",
+      "libraries": "Libraries",
+      "upcomingEvents": "Upcoming events"
+    },
+    "empty": "No councils found."
+  },
+  "councilDetail": {
+    "tabs": {
+      "overview": "Overview",
+      "events": "Library Events",
+      "facilities": "Facilities"
+    },
+    "kpi": {
+      "population": "Population",
+      "area": "Area (km²)",
+      "density": "Density",
+      "dataYear": "Data year"
+    },
+    "gender": {
+      "heading": "Gender distribution",
+      "male": "Male",
+      "female": "Female",
+      "medianAge": "Median age"
+    },
+    "ageGroups": {
+      "heading": "Age distribution",
+      "source": "Source: ABS 2021 Census G04",
+      "0to4": "0–4 yrs",
+      "0to4sub": "Childcare age",
+      "5to14": "5–14 yrs",
+      "5to14sub": "Primary school",
+      "15to19": "15–19 yrs",
+      "15to19sub": "Secondary school",
+      "20to39": "20–39 yrs",
+      "20to39sub": "Young adults",
+      "40to64": "40–64 yrs",
+      "40to64sub": "Middle age",
+      "65plus": "65+ yrs",
+      "65plussub": "Seniors"
+    },
+    "events": {
+      "empty": "No upcoming events found.",
+      "viewAll": "View all events for {council} →"
+    },
+    "facilities": {
+      "comingSoon": "Facilities data coming soon."
+    }
+  },
+  "events": {
+    "heading": "Melbourne Library Events",
+    "allCouncils": "All councils",
+    "allCategories": "All categories",
+    "today": "Today",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "found": "{count} events found",
+    "noEvents": "No events found.",
+    "prev": "← Previous",
+    "next": "Next →",
+    "page": "Page {page} of {total}",
+    "book": "Book"
+  },
+  "myEvents": {
+    "heading": "My Events",
+    "favouriteCount": "{count} favourite council",
+    "favouriteCountPlural": "{count} favourite councils",
+    "addMore": "+ add more",
+    "loading": "Loading events…",
+    "noEvents": "No upcoming events for your favourite councils.",
+    "totalEvents": "{total} upcoming events",
+    "emptyTitle": "No favourites yet",
+    "emptyDesc": "Star a council to see only their upcoming library events here.",
+    "browseCouncils": "Browse councils →"
+  },
+  "compare": {
+    "heading": "Compare Councils",
+    "select": "Select a council",
+    "button": "Compare",
+    "metrics": {
+      "population": "Population",
+      "area": "Area (km²)",
+      "density": "Density (/km²)",
+      "libraries": "Libraries",
+      "events": "Events this month",
+      "medianAge": "Median age"
+    }
+  }
+}

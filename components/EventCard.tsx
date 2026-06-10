@@ -1,3 +1,10 @@
+const SOURCE_LABELS: Record<string, string> = {
+  'mylibrary.digital': 'mylibrary',
+  eventbrite: 'Eventbrite',
+  humanitix: 'Humanitix',
+  official: 'Official',
+}
+
 interface Props {
   title: string
   council: string
@@ -5,12 +12,14 @@ interface Props {
   startAt: string | Date
   category?: string | null
   bookingUrl?: string | null
+  source?: string | null
 }
 
-export function EventCard({ title, council, venue, startAt, category, bookingUrl }: Props) {
+export function EventCard({ title, council, venue, startAt, category, bookingUrl, source }: Props) {
   const date = new Date(startAt)
   const dateStr = date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+  const sourceLabel = source ? (SOURCE_LABELS[source] ?? source) : null
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3">
@@ -26,14 +35,17 @@ export function EventCard({ title, council, venue, startAt, category, bookingUrl
               {category}
             </span>
           )}
+          {sourceLabel && (
+            <span className="text-xs text-gray-400">{sourceLabel}</span>
+          )}
           {bookingUrl && (
             <a
               href={bookingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-[var(--color-primary)] underline"
+              className="text-xs text-(--color-primary) underline"
             >
-              Book
+              Book →
             </a>
           )}
         </div>

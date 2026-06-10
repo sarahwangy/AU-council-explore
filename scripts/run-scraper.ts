@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { scrapeMyLibraryDigital } from '../scrapers/mylibrary-digital'
+import { scrapeMyLibraryPlaywright, CLOUDFLARE_COUNCILS } from '../scrapers/mylibrary-playwright'
 import { scrapeHumanitix } from '../scrapers/humanitix'
 import { scrapeEventbrite } from '../scrapers/eventbrite'
 
@@ -145,7 +146,39 @@ async function runEventbriteScrapers() {
   }
 }
 
+async function runPlaywrightScrapers() {
+  for (const { councilId, url } of CLOUDFLARE_COUNCILS) {
+    console.log(`Scraping (Playwright) ${councilId} (${url})...`)
+    try {
+      const events = await scrapeMyLibraryPlaywright(url)
+      let saved = 0
+      for (const e of events) {
+        if (!e.externalId) continue
+        try {
+          await prisma.event.upsert({
+            where: { source_externalId: { source: 'mylibrary', externalId: e.externalId } },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
+            create: { councilId, ...e, source: 'mylibrary' },
+          })
+          saved++
+        } catch { /* skip constraint errors */ }
+      }
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'mylibrary', status: 'success', count: saved },
+      })
+      console.log(`  → ${events.length} found, ${saved} saved`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'mylibrary', status: 'error', error: msg },
+      })
+      console.error(`  → error: ${msg}`)
+    }
+  }
+}
+
 runMyLibraryScrapers()
+  .then(() => runPlaywrightScrapers())
   .then(() => runHumanitixScrapers())
   .then(() => runEventbriteScrapers())
   .catch(console.error)

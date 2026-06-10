@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const councilId = searchParams.get('council')
+  // councils= accepts comma-separated ids for My Events filtering
+  const councilsParam = searchParams.get('councils')
+  const councilIds = councilsParam ? councilsParam.split(',').filter(Boolean) : null
   const category = searchParams.get('category')
   const from = searchParams.get('from')
   const to = searchParams.get('to')
@@ -11,7 +14,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '20'), 100)
 
   const where = {
-    ...(councilId ? { councilId } : {}),
+    ...(councilIds ? { councilId: { in: councilIds } } : councilId ? { councilId } : {}),
     ...(category ? { category } : {}),
     startAt: {
       gte: from ? new Date(from) : new Date(),

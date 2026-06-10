@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
 import { AppNav } from '@/components/AppNav'
 import './globals.css'
 
@@ -18,12 +20,17 @@ export const metadata: Metadata = {
   description: 'Explore Melbourne councils — library events, population stats, and community facilities',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <AppNav />
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppNav locale={locale} />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   )

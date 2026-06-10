@@ -26,9 +26,17 @@ model CouncilStats {
   id            String   @id @default(cuid())
   councilId     String   @unique
   council       Council  @relation(fields: [councilId], references: [id])
+  // Gender (from G01)
   malePercent   Float?
   femalePercent Float?
   medianAge     Int?
+  // Age groups as % of total population (from G04)
+  agePct0to4    Float?   // Preschool / childcare age
+  agePct5to14   Float?   // Primary school age
+  agePct15to19  Float?   // Secondary school age
+  agePct20to39  Float?   // Young adults
+  agePct40to64  Float?   // Middle age
+  agePct65plus  Float?   // Seniors
   dataYear      Int      @default(2021)
   updatedAt     DateTime @updatedAt
 }
