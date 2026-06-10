@@ -1,5 +1,7 @@
 import { prisma } from '../lib/prisma'
 import { scrapeMyLibraryDigital } from '../scrapers/mylibrary-digital'
+import { scrapeHumanitix } from '../scrapers/humanitix'
+import { scrapeEventbrite } from '../scrapers/eventbrite'
 
 /**
  * Council event sources using the mylibrary.digital platform.
@@ -73,6 +75,78 @@ async function runMyLibraryScrapers() {
   }
 }
 
+const HUMANITIX_COUNCILS = [
+  { councilId: 'wyndham', hostSlug: 'wyndham-city-libraries' },
+]
+
+const EVENTBRITE_COUNCILS = [
+  { councilId: 'merri-bek', organizerId: '368932576' },
+]
+
+async function runHumanitixScrapers() {
+  for (const { councilId, hostSlug } of HUMANITIX_COUNCILS) {
+    console.log(`Scraping Humanitix: ${councilId}...`)
+    try {
+      const events = await scrapeHumanitix(hostSlug)
+      let saved = 0
+      for (const e of events) {
+        if (!e.externalId) continue
+        try {
+          await prisma.event.upsert({
+            where: { source_externalId: { source: 'humanitix', externalId: e.externalId } },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
+            create: { councilId, ...e, source: 'humanitix' },
+          })
+          saved++
+        } catch { /* skip constraint errors */ }
+      }
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'humanitix', status: 'success', count: saved },
+      })
+      console.log(`  → ${events.length} found, ${saved} saved`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'humanitix', status: 'error', error: msg },
+      })
+      console.error(`  → error: ${msg}`)
+    }
+  }
+}
+
+async function runEventbriteScrapers() {
+  for (const { councilId, organizerId } of EVENTBRITE_COUNCILS) {
+    console.log(`Scraping Eventbrite: ${councilId}...`)
+    try {
+      const events = await scrapeEventbrite(organizerId)
+      let saved = 0
+      for (const e of events) {
+        if (!e.externalId) continue
+        try {
+          await prisma.event.upsert({
+            where: { source_externalId: { source: 'eventbrite', externalId: e.externalId } },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
+            create: { councilId, ...e, source: 'eventbrite' },
+          })
+          saved++
+        } catch { /* skip constraint errors */ }
+      }
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'eventbrite', status: 'success', count: saved },
+      })
+      console.log(`  → ${events.length} found, ${saved} saved`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      await prisma.scrapeLog.create({
+        data: { councilId, source: 'eventbrite', status: 'error', error: msg },
+      })
+      console.error(`  → error: ${msg}`)
+    }
+  }
+}
+
 runMyLibraryScrapers()
+  .then(() => runHumanitixScrapers())
+  .then(() => runEventbriteScrapers())
   .catch(console.error)
   .finally(() => prisma.$disconnect())
