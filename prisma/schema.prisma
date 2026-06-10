@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,4 +5,74 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Council {
+  id               String        @id
+  name             String
+  region           String
+  website          String?
+  libraryUrl       String?
+  libraryPlatform  String?
+  population       Int?
+  areaSqKm         Float?
+  stats            CouncilStats?
+  libraries        Library[]
+  events           Event[]
+  createdAt        DateTime      @default(now())
+}
+
+model CouncilStats {
+  id            String   @id @default(cuid())
+  councilId     String   @unique
+  council       Council  @relation(fields: [councilId], references: [id])
+  malePercent   Float?
+  femalePercent Float?
+  medianAge     Int?
+  dataYear      Int      @default(2021)
+  updatedAt     DateTime @updatedAt
+}
+
+model Library {
+  id        String   @id @default(cuid())
+  councilId String
+  council   Council  @relation(fields: [councilId], references: [id])
+  name      String
+  address   String?
+  suburb    String?
+  lat       Float?
+  lng       Float?
+  events    Event[]
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  councilId   String
+  council     Council   @relation(fields: [councilId], references: [id])
+  libraryId   String?
+  library     Library?  @relation(fields: [libraryId], references: [id])
+  title       String
+  description String?
+  category    String?
+  startAt     DateTime
+  endAt       DateTime?
+  venue       String?
+  bookingUrl  String?
+  source      String
+  externalId  String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([source, externalId])
+  @@index([councilId, startAt])
+  @@index([category, startAt])
+}
+
+model ScrapeLog {
+  id        String   @id @default(cuid())
+  councilId String?
+  source    String
+  status    String
+  count     Int?
+  error     String?
+  runAt     DateTime @default(now())
 }
