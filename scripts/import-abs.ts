@@ -2,8 +2,42 @@ import { prisma } from '../lib/prisma'
 import * as fs from 'fs'
 import * as path from 'path'
 
-// Maps ABS LGA names (from Census G01 table) to our council slugs
+// The downloaded G01 CSV uses numeric LGA codes (e.g. "LGA24600"), not names.
+// Maps ABS LGA codes (ASGS Edition 3, 2021) to our council slugs.
+// Also supports legacy name-based keys for manual CSV exports.
 const LGA_SLUG_MAP: Record<string, string> = {
+  // --- LGA codes (from the downloaded G01 CSV) ---
+  'LGA20490': 'banyule',
+  'LGA20570': 'bayside',
+  'LGA20910': 'boroondara',
+  'LGA21000': 'brimbank',
+  'LGA21110': 'darebin',
+  'LGA21610': 'casey',
+  'LGA22170': 'frankston',
+  'LGA22670': 'glen-eira',
+  'LGA23110': 'hobsons-bay',
+  'LGA23270': 'hume',
+  'LGA23360': 'knox',
+  'LGA23490': 'cardinia',
+  'LGA23670': 'maribyrnong',
+  'LGA24490': 'manningham',
+  'LGA24600': 'melbourne',
+  'LGA24650': 'maroondah',
+  'LGA24970': 'melton',
+  'LGA25060': 'monash',
+  'LGA25250': 'mornington-peninsula',
+  'LGA25340': 'merri-bek',
+  'LGA25620': 'nillumbik',
+  'LGA25900': 'moonee-valley',
+  'LGA26110': 'greater-dandenong',
+  'LGA26350': 'port-phillip',
+  'LGA26980': 'stonnington',
+  'LGA27070': 'whittlesea',
+  'LGA27260': 'wyndham',
+  'LGA27350': 'whitehorse',
+  'LGA27900': 'yarra',
+  'LGA27980': 'yarra-ranges',
+  // --- LGA name fallbacks (for manually exported CSVs that include names) ---
   'Melbourne (C)': 'melbourne',
   'Port Phillip (C)': 'port-phillip',
   'Stonnington (C)': 'stonnington',
@@ -52,7 +86,10 @@ async function main() {
   const totalIdx = headers.findIndex(h => h === 'Tot_P_P')
   const maleIdx = headers.findIndex(h => h === 'Tot_P_M')
   const femaleIdx = headers.findIndex(h => h === 'Tot_P_F')
-  const lgaIdx = headers.findIndex(h => h.includes('LGA_NAME') || h === 'lga_name_2021' || h === 'LGA_NAME_2021')
+  // G01 short-header CSV uses LGA_CODE_2021 (e.g. "LGA24600"); long-header uses LGA_NAME_2021
+  const lgaIdx = headers.findIndex(h =>
+    h === 'LGA_CODE_2021' || h.includes('LGA_NAME') || h === 'lga_name_2021' || h === 'LGA_NAME_2021'
+  )
   const medianAgeIdx = headers.findIndex(h => h.includes('Median_age') || h === 'Median_age_persons')
 
   if (totalIdx === -1 || lgaIdx === -1) {
