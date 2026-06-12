@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { getTranslations } from 'next-intl/server'
 import { CouncilCard } from '@/components/CouncilCard'
+import { CouncilSearch } from './CouncilSearch'
 
 const REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer', 'regional'] as const
 
@@ -52,15 +53,12 @@ export default async function CouncilsPage({ searchParams }: Props) {
         ))}
       </div>
 
-      <form method="get" action="/councils" className="mb-6">
-        {region && <input type="hidden" name="region" value={region} />}
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder={t('search')}
-          className="w-full max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
-        />
-      </form>
+      <CouncilSearch
+        councils={councils.map(c => ({ id: c.id, name: c.name, region: c.region }))}
+        defaultValue={q}
+        region={region}
+        placeholder={t('search')}
+      />
 
       <p className="text-sm text-gray-500 mb-4">{t('count', { count: filtered.length })}</p>
 
