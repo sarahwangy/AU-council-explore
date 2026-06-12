@@ -9,11 +9,13 @@ const REGION_COLORS: Record<string, string> = {
   northern: '#ea580c',
   western: '#dc2626',
   outer: '#6b7280',
+  regional: '#0891b2',
 }
 
 const REGION_LABELS: Record<string, string> = {
   inner: 'Inner', eastern: 'Eastern', southern: 'Southern',
   northern: 'Northern', western: 'Western', outer: 'Outer',
+  regional: 'Regional',
 }
 
 interface Council {
@@ -202,8 +204,8 @@ export default function HomePage() {
       const map = new mapboxgl.Map({
         container: mapContainer.current!,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [145.0, -37.8],
-        zoom: 9,
+        center: [145.5, -36.8],
+        zoom: 7,
       })
       mapRef.current = map
 

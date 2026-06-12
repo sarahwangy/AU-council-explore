@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { getTranslations } from 'next-intl/server'
 import { CouncilCard } from '@/components/CouncilCard'
 
-const REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer'] as const
+const REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer', 'regional'] as const
 
 interface Props {
   searchParams: Promise<{ region?: string; q?: string }>
