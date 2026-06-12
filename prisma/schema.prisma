@@ -107,3 +107,11 @@ model ScrapeLog {
   error     String?
   runAt     DateTime @default(now())
 }
+
+model AiSearchCache {
+  id        String   @id @default(cuid())
+  queryKey  String   @unique  // normalized lowercase query
+  result    String   // JSON stringified SearchResult
+  createdAt DateTime @default(now())
+  expiresAt DateTime            // TTL — re-fetch after this date
+}

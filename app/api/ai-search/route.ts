@@ -22,9 +22,28 @@ function extractLocation(q: string): string[] {
   return knownSuburbs.filter(s => qLower.includes(s))
 }
 
+const CACHE_TTL_HOURS = 24
+
+function normalizeQuery(q: string) {
+  return q.toLowerCase().trim().replace(/\s+/g, ' ')
+}
+
 export async function POST(req: NextRequest) {
+  try {
   const { query } = await req.json() as { query: string }
   if (!query?.trim()) return NextResponse.json({ error: 'No query' }, { status: 400 })
+
+  const queryKey = normalizeQuery(query)
+
+  // Check cache first (guard: aiSearchCache may be absent on old Prisma client)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cacheModel = (prisma as any).aiSearchCache
+  const cached = cacheModel
+    ? await cacheModel.findUnique({ where: { queryKey } })
+    : null
+  if (cached && cached.expiresAt > new Date()) {
+    return NextResponse.json({ ...JSON.parse(cached.result), cached: true })
+  }
 
   const keywords = query.trim().split(/\s+/).filter(w => w.length > 2)
   const locations = extractLocation(query)
@@ -127,7 +146,7 @@ Please provide a comprehensive answer that:
     summary = (fallback.content[0] as { type: string; text: string }).text
   }
 
-  return NextResponse.json({
+  const payload = {
     summary,
     events: events.slice(0, 8).map(e => ({
       id: e.id,
@@ -149,5 +168,22 @@ Please provide a comprehensive answer that:
       councilName: l.council.name,
       url: l.url,
     })),
-  })
+  }
+
+  // Write to cache (guard: aiSearchCache may be absent on old Prisma client)
+  if (cacheModel) {
+    const expiresAt = new Date(Date.now() + CACHE_TTL_HOURS * 60 * 60 * 1000)
+    await cacheModel.upsert({
+      where: { queryKey },
+      create: { queryKey, result: JSON.stringify(payload), expiresAt },
+      update: { result: JSON.stringify(payload), expiresAt, createdAt: new Date() },
+    })
+  }
+
+  return NextResponse.json(payload)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[ai-search] unhandled error:', msg, err)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }
