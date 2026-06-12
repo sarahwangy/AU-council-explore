@@ -9,17 +9,20 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-const REGIONAL_LGA_NAMES: Record<string, string> = {
+const LGA_NAME_MAP: Record<string, string> = {
   'Greater Geelong': 'geelong',
   'Ballarat': 'ballarat',
   'Greater Bendigo': 'bendigo',
+  'Casey': 'casey',
+  'Wyndham': 'wyndham',
+  'Frankston': 'frankston',
 }
 
 async function main() {
   console.log('Downloading Victorian LGA boundaries...')
 
-  // ABS 2021 LGA boundary GeoJSON — only fetch the 3 regional councils
-  const url = "https://geo.abs.gov.au/arcgis/rest/services/ASGS2021/LGA/MapServer/0/query?where=lga_name_2021+IN+('Greater+Geelong','Ballarat','Greater+Bendigo')&outFields=lga_name_2021,lga_code_2021&outSR=4326&f=geojson"
+  const names = Object.keys(LGA_NAME_MAP).map(n => `'${n}'`).join(',')
+  const url = `https://geo.abs.gov.au/arcgis/rest/services/ASGS2021/LGA/MapServer/0/query?where=lga_name_2021+IN+(${names})&outFields=lga_name_2021,lga_code_2021&outSR=4326&f=geojson`
 
   let vicData: { features: { type: string; properties: Record<string, string>; geometry: unknown }[] }
 
@@ -37,22 +40,22 @@ async function main() {
     process.exit(1)
   }
 
-  // Find the 3 regional council features
-  const regionalFeatures = vicData.features.filter(f => {
+  // Find all target council features
+  const targetFeatures = vicData.features.filter(f => {
     const name = f.properties.lga_name_2021 ?? f.properties.LGA_NAME21 ?? ''
-    return Object.keys(REGIONAL_LGA_NAMES).some(n => name.includes(n))
+    return Object.keys(LGA_NAME_MAP).some(n => name.includes(n))
   })
 
-  if (regionalFeatures.length === 0) {
-    console.error('Could not find regional LGA features. Check property names:')
+  if (targetFeatures.length === 0) {
+    console.error('Could not find LGA features. Check property names:')
     console.error('Sample properties:', vicData.features[0]?.properties)
     process.exit(1)
   }
 
   // Normalise properties to match existing GeoJSON format (lga_slug)
-  const normalised = regionalFeatures.map(f => {
+  const normalised = targetFeatures.map(f => {
     const rawName = f.properties.lga_name_2021 ?? f.properties.LGA_NAME21 ?? ''
-    const slug = Object.entries(REGIONAL_LGA_NAMES).find(([n]) => rawName.includes(n))?.[1] ?? rawName.toLowerCase()
+    const slug = Object.entries(LGA_NAME_MAP).find(([n]) => rawName.includes(n))?.[1] ?? rawName.toLowerCase()
     return {
       ...f,
       properties: { lga_slug: slug, lga_name: rawName },

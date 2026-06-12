@@ -434,9 +434,18 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
                   </div>
                 </div>
                 <ul className="text-sm text-gray-600 space-y-1.5">
-                  <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-400 shrink-0" /> Yellow lid — Recycling (paper, plastic, glass)</li>
-                  <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500 shrink-0" /> Green lid — Garden &amp; food waste</li>
                   <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 shrink-0" /> Red lid — General waste</li>
+                  <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-400 shrink-0" /> Yellow lid — Recycling (paper, plastic, metal)</li>
+                  <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-lime-400 shrink-0" /> Lime green lid — Food &amp; garden organics (FOGO)</li>
+                  {council.id === 'ballarat' && (
+                    <li className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-purple-500 shrink-0" /> Purple lid — Glass only</li>
+                  )}
+                  {council.id === 'bendigo' && (
+                    <li className="text-xs text-gray-400 mt-1">Note: Bendigo is transitioning — some households may have older red/dark-green or blue/yellow bins.</li>
+                  )}
+                  {council.id === 'geelong' && (
+                    <li className="text-xs text-gray-400 mt-1">Note: Geelong is rolling out lime green lids — some older bins may still have dark green.</li>
+                  )}
                 </ul>
               </div>
 
