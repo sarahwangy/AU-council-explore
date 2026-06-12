@@ -1,10 +1,13 @@
 {
   "nav": {
     "title": "墨尔本社区指南",
+    "map": "地图",
     "councils": "地区列表",
     "events": "活动日历",
     "compare": "对比",
-    "myEvents": "我的活动"
+    "myEvents": "我的活动",
+    "libraries": "图书馆",
+    "schools": "学区查询"
   },
   "councils": {
     "heading": "墨尔本各地区",

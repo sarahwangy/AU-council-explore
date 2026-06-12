@@ -3,6 +3,7 @@ import { scrapeMyLibraryDigital } from '../scrapers/mylibrary-digital'
 import { scrapeMyLibraryPlaywright, CLOUDFLARE_COUNCILS } from '../scrapers/mylibrary-playwright'
 import { scrapeHumanitix } from '../scrapers/humanitix'
 import { scrapeEventbrite } from '../scrapers/eventbrite'
+import { classifyEventFull } from '../scrapers/classify'
 
 /**
  * Council event sources using the mylibrary.digital platform.
@@ -35,27 +36,11 @@ async function runMyLibraryScrapers() {
       for (const e of events) {
         if (!e.externalId) continue
         try {
+          const cls = classifyEventFull(e.title, e.description, e.category)
           await prisma.event.upsert({
             where: { source_externalId: { source: 'mylibrary', externalId: e.externalId } },
-            update: {
-              title: e.title,
-              description: e.description,
-              startAt: e.startAt,
-              endAt: e.endAt,
-              venue: e.venue,
-              bookingUrl: e.bookingUrl,
-            },
-            create: {
-              councilId,
-              title: e.title,
-              description: e.description,
-              startAt: e.startAt,
-              endAt: e.endAt,
-              venue: e.venue,
-              bookingUrl: e.bookingUrl,
-              source: 'mylibrary',
-              externalId: e.externalId,
-            },
+            update: { title: e.title, description: e.description, startAt: e.startAt, endAt: e.endAt, venue: e.venue, bookingUrl: e.bookingUrl, category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
+            create: { councilId, title: e.title, description: e.description, startAt: e.startAt, endAt: e.endAt, venue: e.venue, bookingUrl: e.bookingUrl, source: 'mylibrary', externalId: e.externalId, category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
           })
           saved++
         } catch {
@@ -93,10 +78,11 @@ async function runHumanitixScrapers() {
       for (const e of events) {
         if (!e.externalId) continue
         try {
+          const cls = classifyEventFull(e.title, e.description)
           await prisma.event.upsert({
             where: { source_externalId: { source: 'humanitix', externalId: e.externalId } },
-            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
-            create: { councilId, ...e, source: 'humanitix' },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue, category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
+            create: { councilId, ...e, source: 'humanitix', category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
           })
           saved++
         } catch { /* skip constraint errors */ }
@@ -124,10 +110,11 @@ async function runEventbriteScrapers() {
       for (const e of events) {
         if (!e.externalId) continue
         try {
+          const cls = classifyEventFull(e.title, e.description)
           await prisma.event.upsert({
             where: { source_externalId: { source: 'eventbrite', externalId: e.externalId } },
-            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
-            create: { councilId, ...e, source: 'eventbrite' },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue, category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
+            create: { councilId, ...e, source: 'eventbrite', category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
           })
           saved++
         } catch { /* skip constraint errors */ }
@@ -155,10 +142,11 @@ async function runPlaywrightScrapers() {
       for (const e of events) {
         if (!e.externalId) continue
         try {
+          const cls = classifyEventFull(e.title, e.description)
           await prisma.event.upsert({
             where: { source_externalId: { source: 'mylibrary', externalId: e.externalId } },
-            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue },
-            create: { councilId, ...e, source: 'mylibrary' },
+            update: { title: e.title, startAt: e.startAt, endAt: e.endAt, venue: e.venue, category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
+            create: { councilId, ...e, source: 'mylibrary', category: cls.category ?? null, ageGroup: cls.ageGroup ?? null, isFree: cls.isFree, requiresBooking: cls.requiresBooking },
           })
           saved++
         } catch { /* skip constraint errors */ }

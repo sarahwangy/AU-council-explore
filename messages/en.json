@@ -1,10 +1,13 @@
 {
   "nav": {
     "title": "Melbourne Council Explorer",
+    "map": "Map",
     "councils": "Councils",
     "events": "Events",
     "compare": "Compare",
-    "myEvents": "My Events"
+    "myEvents": "My Events",
+    "libraries": "Libraries",
+    "schools": "Schools"
   },
   "councils": {
     "heading": "Melbourne Councils",

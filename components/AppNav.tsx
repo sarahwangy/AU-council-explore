@@ -12,6 +12,9 @@ export function AppNav({ locale }: { locale: string }) {
           {t('title')}
         </Link>
         <div className="flex items-center gap-6 text-sm">
+          <Link href="/" className="hover:text-(--color-accent) transition-colors">
+            {t('map')}
+          </Link>
           <Link href="/councils" className="hover:text-(--color-accent) transition-colors">
             {t('councils')}
           </Link>
@@ -20,6 +23,12 @@ export function AppNav({ locale }: { locale: string }) {
           </Link>
           <Link href="/compare" className="hover:text-(--color-accent) transition-colors">
             {t('compare')}
+          </Link>
+          <Link href="/libraries" className="hover:text-(--color-accent) transition-colors">
+            {t('libraries')}
+          </Link>
+          <Link href="/schools" className="hover:text-(--color-accent) transition-colors">
+            {t('schools')}
           </Link>
           <Link href="/my-events" className="hover:text-(--color-accent) transition-colors">
             ★ {t('myEvents')}
