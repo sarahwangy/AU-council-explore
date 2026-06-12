@@ -16,6 +16,9 @@ model Council {
   libraryPlatform  String?
   population       Int?
   areaSqKm         Float?
+  hardRubbishUrl   String?
+  kindergartenUrl  String?
+  libraryCardUrl   String?
   stats            CouncilStats?
   libraries        Library[]
   events           Event[]
@@ -37,6 +40,10 @@ model CouncilStats {
   agePct20to39  Float?   // Young adults
   agePct40to64  Float?   // Middle age
   agePct65plus  Float?   // Seniors
+  // Demographics (from G09 + G08)
+  overseasBornPct        Float?   // % born overseas
+  medianHouseholdIncome  Int?     // weekly median household income (AUD)
+  topLanguagesJson       String?  // JSON: [{ language: "Mandarin", pct: 12.3 }, ...]
   dataYear      Int      @default(2021)
   updatedAt     DateTime @updatedAt
 }
@@ -46,10 +53,13 @@ model Library {
   councilId String
   council   Council  @relation(fields: [councilId], references: [id])
   name      String
+  url       String?
   address   String?
   suburb    String?
+  phone     String?
   lat       Float?
   lng       Float?
+  hoursJson String?  // JSON: { mon:"9:00-18:00", tue:..., sun:null }
   events    Event[]
 }
 
@@ -59,20 +69,33 @@ model Event {
   council     Council   @relation(fields: [councilId], references: [id])
   libraryId   String?
   library     Library?  @relation(fields: [libraryId], references: [id])
-  title       String
-  description String?
-  category    String?
-  startAt     DateTime
-  endAt       DateTime?
-  venue       String?
-  bookingUrl  String?
-  source      String
-  externalId  String?
-  createdAt   DateTime  @default(now())
+  title           String
+  description     String?
+  category        String?
+  ageGroup        String?   // "kids-0-5" | "school-age" | "adult" | "senior" | "all-ages"
+  isFree          Boolean   @default(true)
+  requiresBooking Boolean   @default(false)
+  startAt         DateTime
+  endAt           DateTime?
+  venue           String?
+  bookingUrl      String?
+  source          String
+  externalId      String?
+  createdAt       DateTime  @default(now())
 
   @@unique([source, externalId])
   @@index([councilId, startAt])
   @@index([category, startAt])
+}
+
+model Subscriber {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  councils   String[] // array of council slugs
+  token      String   @unique @default(cuid()) // unsubscribe token
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  lastSentAt DateTime?
 }
 
 model ScrapeLog {
