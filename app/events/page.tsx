@@ -21,6 +21,7 @@ interface Props {
     ageGroup?: string
     free?: string
     noBooking?: string
+    q?: string
   }>
 }
 
@@ -63,6 +64,7 @@ export default async function EventsPage({ searchParams }: Props) {
   const ageGroup = sp.ageGroup
   const freeOnly = sp.free === 'true'
   const noBooking = sp.noBooking === 'true'
+  const q = sp.q?.trim() || undefined
   const { from, to } = getDateRange(sp.range, date)
 
   const where = {
@@ -71,6 +73,7 @@ export default async function EventsPage({ searchParams }: Props) {
     ...(ageGroup ? { ageGroup } : {}),
     ...(freeOnly ? { isFree: true } : {}),
     ...(noBooking ? { requiresBooking: false } : {}),
+    ...(q ? { title: { contains: q, mode: 'insensitive' as const } } : {}),
     startAt: { gte: from, ...(to ? { lte: to } : {}) },
   }
 
@@ -96,6 +99,7 @@ export default async function EventsPage({ searchParams }: Props) {
     if (ageGroup && !('ageGroup' in overrides)) params.set('ageGroup', ageGroup)
     if (freeOnly && !('free' in overrides)) params.set('free', 'true')
     if (noBooking && !('noBooking' in overrides)) params.set('noBooking', 'true')
+    if (q && !('q' in overrides)) params.set('q', q)
     if (sp.range && !('range' in overrides) && !('date' in overrides)) params.set('range', sp.range)
     if (date && !('date' in overrides) && !('range' in overrides)) params.set('date', date)
     for (const [k, v] of Object.entries(overrides)) if (v) params.set(k, v)
@@ -122,6 +126,17 @@ export default async function EventsPage({ searchParams }: Props) {
       {/* Filter card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
         <form method="get" action="/events" className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col gap-1 flex-1 min-w-48">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Search</label>
+            <input
+              type="text"
+              name="q"
+              defaultValue={q ?? ''}
+              placeholder="e.g. kids, sewing, story time…"
+              className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Council</label>
             <select
@@ -167,7 +182,7 @@ export default async function EventsPage({ searchParams }: Props) {
             Apply
           </button>
 
-          {(council || category || sp.range || date) && (
+          {(council || category || sp.range || date || q) && (
             <a
               href="/events"
               className="px-4 py-2 text-sm text-gray-400 hover:text-gray-600 rounded-xl border border-gray-200"
@@ -240,8 +255,14 @@ export default async function EventsPage({ searchParams }: Props) {
       </div>
 
       {/* Active filter chips */}
-      {(council || category || date || ageGroup || freeOnly || noBooking) && (
+      {(council || category || date || ageGroup || freeOnly || noBooking || q) && (
         <div className="flex gap-2 mb-4 flex-wrap">
+          {q && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+              🔍 "{q}"
+              <a href={buildUrl({ q: '', page: '1' })} className="ml-1 hover:text-gray-900">×</a>
+            </span>
+          )}
           {date && (
             <span className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
               📅 {new Date(date).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}

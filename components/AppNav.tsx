@@ -1,9 +1,28 @@
+'use client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { LocaleSwitcher } from './LocaleSwitcher'
 
 export function AppNav({ locale }: { locale: string }) {
   const t = useTranslations('nav')
+  const pathname = usePathname()
+
+  const navLink = (href: string, label: string) => {
+    const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+    return (
+      <Link
+        href={href}
+        className={`transition-colors ${
+          active
+            ? 'text-(--color-accent) font-semibold underline underline-offset-4'
+            : 'opacity-80 hover:opacity-100 hover:text-(--color-accent)'
+        }`}
+      >
+        {label}
+      </Link>
+    )
+  }
 
   return (
     <nav className="bg-(--color-primary) text-white">
@@ -12,27 +31,13 @@ export function AppNav({ locale }: { locale: string }) {
           {t('title')}
         </Link>
         <div className="flex items-center gap-6 text-sm">
-          <Link href="/" className="hover:text-(--color-accent) transition-colors">
-            {t('map')}
-          </Link>
-          <Link href="/councils" className="hover:text-(--color-accent) transition-colors">
-            {t('councils')}
-          </Link>
-          <Link href="/events" className="hover:text-(--color-accent) transition-colors">
-            {t('events')}
-          </Link>
-          <Link href="/compare" className="hover:text-(--color-accent) transition-colors">
-            {t('compare')}
-          </Link>
-          <Link href="/libraries" className="hover:text-(--color-accent) transition-colors">
-            {t('libraries')}
-          </Link>
-          <Link href="/schools" className="hover:text-(--color-accent) transition-colors">
-            {t('schools')}
-          </Link>
-          <Link href="/my-events" className="hover:text-(--color-accent) transition-colors">
-            ★ {t('myEvents')}
-          </Link>
+          {navLink('/', t('map'))}
+          {navLink('/councils', t('councils'))}
+          {navLink('/events', t('events'))}
+          {navLink('/compare', t('compare'))}
+          {navLink('/libraries', t('libraries'))}
+          {navLink('/schools', t('schools'))}
+          {navLink('/my-events', `★ ${t('myEvents')}`)  }
           <LocaleSwitcher current={locale} />
         </div>
       </div>

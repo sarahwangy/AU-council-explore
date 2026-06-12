@@ -106,6 +106,14 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
         ))}
       </div>
 
+      {/* Tab description */}
+      <p className="text-sm text-gray-500 mb-4">
+        {tab === 'overview' && 'Population, age & gender breakdown, overseas-born %, income, and top languages — sourced from ABS 2021 Census.'}
+        {tab === 'events' && 'Upcoming community events from this council\'s library. Click any event to book or get more details.'}
+        {tab === 'libraries' && 'All library branches in this council — opening hours, address, and phone. Click a branch to visit its website.'}
+        {tab === 'new-resident' && 'Essential info for people new to this council: library card, bin colours, GP, kinder enrolment, hard rubbish, and voter registration.'}
+      </p>
+
       {/* Tab content — fixed min-height prevents layout shift */}
       <div className="min-h-96 w-full">
 
