@@ -11,6 +11,7 @@ model Council {
   id               String        @id
   name             String
   region           String
+  state            String        @default("VIC")
   website          String?
   libraryUrl       String?
   libraryPlatform  String?
