@@ -60,6 +60,84 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
   })
   if (!council) notFound()
 
+  // Non-VIC councils: simplified layout (no events/libraries tabs)
+  if (council.state !== 'VIC') {
+    return (
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold text-(--color-primary)">{council.name}</h1>
+              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">{council.state}</span>
+            </div>
+            <p className="text-sm text-gray-400">Council information</p>
+          </div>
+          <Link href="/councils" className="text-sm text-gray-400 hover:text-gray-600">← All Councils</Link>
+        </div>
+
+        {/* Library events card */}
+        {council.libraryUrl && (
+          <a
+            href={council.libraryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between bg-purple-600 text-white rounded-2xl px-6 py-5 mb-6 hover:bg-purple-700 transition-colors group"
+          >
+            <div>
+              <p className="font-semibold text-lg">📚 Library Events &amp; Programs</p>
+              <p className="text-purple-200 text-sm mt-0.5">Browse events, book clubs, children&apos;s programs and more</p>
+            </div>
+            <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+        )}
+
+        {/* Basic info */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-6">
+          {council.population != null && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Population</p>
+              <p className="text-xl font-bold text-(--color-primary)">{council.population.toLocaleString()}</p>
+            </div>
+          )}
+          {council.areaSqKm != null && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Area</p>
+              <p className="text-xl font-bold text-(--color-primary)">{council.areaSqKm.toLocaleString()} km²</p>
+            </div>
+          )}
+          {council.website && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Website</p>
+              <a href={council.website} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline break-all">
+                Visit council website ↗
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Demographics (if stats exist) */}
+        {council.stats && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <h2 className="font-semibold text-gray-700 mb-4">Demographics (ABS Census 2021)</h2>
+            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              {council.stats.medianAge != null && (
+                <div><span className="text-gray-400">Median age:</span> <strong>{council.stats.medianAge}</strong></div>
+              )}
+              {council.stats.overseasBornPct != null && (
+                <div><span className="text-gray-400">Born overseas:</span> <strong>{council.stats.overseasBornPct.toFixed(1)}%</strong></div>
+              )}
+              {council.stats.medianHouseholdIncome != null && (
+                <div><span className="text-gray-400">Median household income:</span> <strong>${council.stats.medianHouseholdIncome.toLocaleString()}/wk</strong></div>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+    )
+  }
+
   const density =
     council.population && council.areaSqKm
       ? Math.round(council.population / council.areaSqKm)
