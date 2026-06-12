@@ -459,3 +459,53 @@ Vercel 部署 — import repo，设置同样的 env vars
 
 **执行顺序：先做 ABS 数据（简单），再做 School Zone（中等难度）**
 
+---
+
+## Q19：Legend 点击过滤是什么功能？
+
+**问：** Legend 点击过滤 + 高亮区域 是什么意思？
+
+**答：** 地图右下角的 Regions 图例，每一行（Inner / Eastern / Regional 等）现在都可以点击：
+
+- 点击某个 Region → 地图自动飞到该区域并 `fitBounds`（所有属于该区域的 council 都在屏幕内）
+- 非选中区域变半透明（opacity 0.15），选中区域保持鲜亮（opacity 0.75）
+- 颜色圆点放大、文字加粗，表示当前选中状态
+- 底部出现 "Show all" 按钮，点击恢复全部区域正常显示
+- 再次点击同一 Region → 取消选中，恢复默认
+
+---
+
+## Q20：Victoria Council Explorer 最新功能总览（2026-06-12）
+
+**问：** 还有哪些需要优化的？
+
+**答：** 已完成的新功能清单：
+
+| 功能 | 实现方式 |
+|------|---------|
+| 地图搜索框 | 输入 council 名称 → 下拉候选 → 点击直接 flyTo |
+| Legend 点击过滤 | 点击区域 → fitBounds + 高亮 + dim 其他 |
+| 移动端 Legend 折叠 | 小屏默认收起，点击展开 |
+| Council 详情页 "View on map" | 绿色闪烁按钮 → 跳转首页并自动 flyTo 该 council |
+| 新大学 | Federation Uni Ballarat / La Trobe Bendigo / Deakin Geelong |
+| 新城市 | Casey (7 libs) / Wyndham (9 libs) / Frankston (3 libs) |
+| LGA 边界 | GeoJSON 现有 37 个 council 边界 |
+| Bin colours | 更新为维州标准（红/黄/石灰绿），Ballarat 紫色玻璃桶 |
+| Export CSV | Libraries 页、Events 页均有 ⬇ Export CSV 按钮 |
+| Sources 来源 | Libraries / Events / Council New Resident 页面底部均显示数据来源 |
+
+**数据来源（bin colours 研究结果）：**
+- [Geelong bin services](https://geelongcity.vic.gov.au/services/rubbish-and-recycling/bin-services)
+- [Ballarat bin collection](https://www.ballarat.vic.gov.au/property/waste/bins)
+- [Bendigo organics bin](https://www.bendigo.vic.gov.au/residents/general-waste-recycling-and-organics/organics-bin)
+- [Connected Libraries branches](https://connectedlibraries.org.au/branches)
+- [Wyndham City Libraries](https://www.wyndham.vic.gov.au/services/libraries)
+- [Frankston City Libraries](https://library.frankston.vic.gov.au/Members/Become-a-Member)
+- [ABS 2021 Casey QuickStats](https://abs.gov.au/census/find-census-data/quickstats/2021/LGA21610)
+- [ABS 2021 Wyndham QuickStats](https://www.abs.gov.au/census/find-census-data/quickstats/2021/LGA27260)
+- [ABS 2021 Frankston QuickStats](https://abs.gov.au/census/find-census-data/quickstats/2021/LGA22170)
+
+---
+
+*最后更新：2026-06-12*
+

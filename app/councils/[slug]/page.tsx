@@ -78,7 +78,7 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
         <Link href="/councils" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 group">
           <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back to Councils
         </Link>
-        <Link href={`/?council=${council.id}`} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-(--color-primary) transition-colors">
+        <Link href={`/?council=${council.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-green-500 hover:bg-green-600 shadow-lg shadow-green-200 animate-pulse hover:animate-none transition-all">
           <span>🗺️</span> View on map
         </Link>
       </div>
@@ -514,6 +514,18 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
                 <a href="https://www.aec.gov.au/enrol/" target="_blank" rel="noopener noreferrer"
                   className="text-sm text-(--color-primary) hover:underline font-medium">Enrol at AEC →</a>
               </div>
+            </div>
+
+            {/* Sources */}
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-400 mb-1">Sources</p>
+              <ul className="text-xs text-gray-400 space-y-0.5">
+                {council.libraryCardUrl && <li><a href={council.libraryCardUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{council.name} — Library card signup</a></li>}
+                {council.kindergartenUrl && <li><a href={council.kindergartenUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{council.name} — Kindergarten registration</a></li>}
+                {council.hardRubbishUrl && <li><a href={council.hardRubbishUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{council.name} — Hard rubbish collection</a></li>}
+                <li><a href="https://www.aec.gov.au/enrol/" target="_blank" rel="noopener noreferrer" className="hover:underline">Australian Electoral Commission — Enrol to vote</a></li>
+                <li><a href="https://www.healthdirect.gov.au/gp-clinics" target="_blank" rel="noopener noreferrer" className="hover:underline">Healthdirect — Find a GP</a></li>
+              </ul>
             </div>
           </div>
         )}

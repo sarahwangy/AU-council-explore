@@ -118,9 +118,17 @@ export default async function EventsPage({ searchParams }: Props) {
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-(--color-primary) mb-1">Community Events</h1>
-        <p className="text-gray-500 text-sm">Library and council events across Victoria</p>
+      <div className="flex items-start justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-(--color-primary) mb-1">Community Events</h1>
+          <p className="text-gray-500 text-sm">Library and council events across Victoria</p>
+        </div>
+        <a
+          href={`/api/events/export?${new URLSearchParams({ ...(council ? { council } : {}), ...(category ? { category } : {}), ...(q ? { q } : {}) }).toString()}`}
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors shrink-0 mt-1"
+        >
+          ⬇ Export CSV
+        </a>
       </div>
 
       {/* Filter card */}
@@ -343,6 +351,12 @@ export default async function EventsPage({ searchParams }: Props) {
           })}
         </div>
       )}
+
+      {/* Sources */}
+      <div className="mt-10 pt-4 border-t border-gray-100">
+        <p className="text-xs font-medium text-gray-400 mb-1">Sources</p>
+        <p className="text-xs text-gray-400">Events are scraped from council library booking systems — Humanitix, Eventbrite, and council-hosted platforms. Data updated daily via automated scraper.</p>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (

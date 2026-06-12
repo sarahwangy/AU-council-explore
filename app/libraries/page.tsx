@@ -34,6 +34,20 @@ export default async function LibrariesPage() {
 
       {/* Council filter + full list — client component for interactive dropdown */}
       <LibraryList grouped={grouped} />
+
+      {/* Sources */}
+      <div className="mt-10 pt-4 border-t border-gray-100">
+        <p className="text-xs font-medium text-gray-400 mb-1">Sources</p>
+        <ul className="text-xs text-gray-400 space-y-0.5">
+          <li><a href="https://www.connectedlibraries.org.au/branches/" target="_blank" rel="noopener noreferrer" className="hover:underline">Connected Libraries (Casey / Cardinia)</a></li>
+          <li><a href="https://www.grlc.vic.gov.au" target="_blank" rel="noopener noreferrer" className="hover:underline">Geelong Regional Library Corporation</a></li>
+          <li><a href="https://libraries.ballarat.vic.gov.au" target="_blank" rel="noopener noreferrer" className="hover:underline">Ballarat Libraries</a></li>
+          <li><a href="https://www.bendigolibrary.com.au" target="_blank" rel="noopener noreferrer" className="hover:underline">Bendigo Library Service</a></li>
+          <li><a href="https://www.wyndham.vic.gov.au/services/libraries" target="_blank" rel="noopener noreferrer" className="hover:underline">Wyndham City Libraries</a></li>
+          <li><a href="https://library.frankston.vic.gov.au" target="_blank" rel="noopener noreferrer" className="hover:underline">Frankston City Libraries</a></li>
+          <li>Opening hours and branch data sourced from individual council websites. May not reflect temporary changes.</li>
+        </ul>
+      </div>
     </main>
   )
 }
