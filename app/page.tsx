@@ -18,6 +18,33 @@ const REGION_LABELS: Record<string, string> = {
   regional: 'Regional',
 }
 
+const STATE_BOUNDS: Record<string, [[number, number], [number, number]]> = {
+  VIC: [[140.96, -39.20], [149.98, -33.98]],
+  NSW: [[140.99, -37.51], [153.64, -28.16]],
+  QLD: [[137.99, -29.18], [153.55, -10.68]],
+  SA:  [[128.99, -38.07], [141.00, -25.99]],
+  WA:  [[112.92, -35.14], [129.00, -13.69]],
+  TAS: [[143.83, -43.65], [148.48, -39.57]],
+  ACT: [[148.76, -35.92], [149.40, -35.12]],
+  NT:  [[129.00, -26.00], [138.00, -10.97]],
+}
+
+const NSW_REGION_COLORS: Record<string, string> = {
+  'sydney-inner':     '#7c3aed',
+  'sydney-north':     '#2563eb',
+  'sydney-west':      '#ea580c',
+  'sydney-southwest': '#16a34a',
+  'nsw-regional':     '#0891b2',
+}
+
+const NSW_REGION_LABELS: Record<string, string> = {
+  'sydney-inner':     'Inner Sydney',
+  'sydney-north':     'North Sydney',
+  'sydney-west':      'Western Sydney',
+  'sydney-southwest': 'South-West Sydney',
+  'nsw-regional':     'NSW Regional',
+}
+
 interface Council {
   id: string
   name: string
@@ -101,10 +128,12 @@ export default function HomePage() {
   const [activeRegion, setActiveRegion] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [legendOpen, setLegendOpen] = useState(false)
+  const [activeState, setActiveState] = useState<string>('VIC')
+  const geojsonByState = useRef<Record<string, unknown>>({})
 
   useEffect(() => {
-    fetch('/api/councils').then(r => r.json()).then(setCouncils)
-  }, [])
+    fetch(`/api/councils?state=${activeState}`).then(r => r.json()).then(setCouncils)
+  }, [activeState])
 
   const toggleLibraries = useCallback(async () => {
     if (!showLibraries && !librariesLoaded) {
@@ -159,6 +188,47 @@ export default function HomePage() {
       map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 40, duration: 800 })
     })
   }, [activeRegion, councils])
+
+  const switchState = useCallback(async (state: string) => {
+    setActiveState(state)
+    setActiveRegion(null)
+
+    const map = mapRef.current
+    if (!map) return
+
+    import('mapbox-gl').then(async ({ default: mapboxgl }) => {
+      const m = map as mapboxgl.Map
+      const bounds = STATE_BOUNDS[state]
+      if (bounds) m.fitBounds(bounds, { padding: 40, duration: 800 })
+
+      if (state === 'VIC') {
+        if (geojsonRef.current) {
+          (m.getSource('lgas') as mapboxgl.GeoJSONSource)?.setData(geojsonRef.current as unknown as GeoJSON.FeatureCollection)
+        }
+        return
+      }
+
+      const filename = `${state.toLowerCase()}-lgas.geojson`
+      if (!geojsonByState.current[state]) {
+        try {
+          const res = await fetch(`/${filename}`)
+          if (res.ok) {
+            geojsonByState.current[state] = await res.json()
+          }
+        } catch {
+          console.warn(`No GeoJSON for ${state}`)
+        }
+      }
+
+      const data = geojsonByState.current[state]
+      if (data) {
+        (m.getSource('lgas') as mapboxgl.GeoJSONSource)?.setData(data as unknown as GeoJSON.FeatureCollection)
+      }
+      if (m.getLayer('lga-fill')) {
+        m.setPaintProperty('lga-fill', 'fill-opacity', 0.25)
+      }
+    })
+  }, [])
 
   const flyToCouncil = useCallback((slug: string) => {
     if (!mapRef.current || !geojsonRef.current) return
@@ -357,6 +427,9 @@ export default function HomePage() {
     })
   }, [councils, router])
 
+  const regionColors = activeState === 'NSW' ? NSW_REGION_COLORS : REGION_COLORS
+  const regionLabels = activeState === 'NSW' ? NSW_REGION_LABELS : REGION_LABELS
+
   return (
     <div className="relative h-[calc(100vh-56px)]">
       {/* Map container */}
@@ -449,7 +522,24 @@ export default function HomePage() {
           <span className="sm:hidden text-gray-400">{legendOpen ? '▲' : '▼'}</span>
         </button>
         <div className={`${legendOpen ? 'block' : 'hidden'} sm:block mt-2`}>
-        {Object.entries(REGION_LABELS).map(([key, label]) => (
+        {/* State tabs */}
+        <div className="flex flex-wrap gap-1 mb-3 pb-3 border-b border-white/20">
+          {['VIC','NSW','QLD','SA','WA','TAS'].map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => switchState(s)}
+              className={`px-2 py-0.5 rounded-md text-xs font-semibold transition-colors ${
+                activeState === s
+                  ? 'bg-white text-(--color-primary)'
+                  : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        {Object.entries(regionLabels).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -461,11 +551,11 @@ export default function HomePage() {
             <div
               className="w-3 h-3 rounded-sm shrink-0 transition-transform"
               style={{
-                backgroundColor: REGION_COLORS[key],
+                backgroundColor: regionColors[key],
                 transform: activeRegion === key ? 'scale(1.3)' : 'scale(1)',
               }}
             />
-            <span className={activeRegion === key ? 'font-semibold text-gray-800' : 'text-gray-600'}>{label}</span>
+            <span className={activeRegion === key ? 'font-semibold text-gray-800' : 'text-gray-600'}>{label as string}</span>
           </button>
         ))}
         {activeRegion && (
