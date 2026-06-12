@@ -8,6 +8,9 @@ export async function GET(req: NextRequest) {
   const councilsParam = searchParams.get('councils')
   const councilIds = councilsParam ? councilsParam.split(',').filter(Boolean) : null
   const category = searchParams.get('category')
+  const ageGroup = searchParams.get('ageGroup')
+  const freeOnly = searchParams.get('free') === 'true'
+  const noBooking = searchParams.get('noBooking') === 'true'
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const page = parseInt(searchParams.get('page') ?? '1')
@@ -16,6 +19,9 @@ export async function GET(req: NextRequest) {
   const where = {
     ...(councilIds ? { councilId: { in: councilIds } } : councilId ? { councilId } : {}),
     ...(category ? { category } : {}),
+    ...(ageGroup ? { ageGroup } : {}),
+    ...(freeOnly ? { isFree: true } : {}),
+    ...(noBooking ? { requiresBooking: false } : {}),
     startAt: {
       gte: from ? new Date(from) : new Date(),
       ...(to ? { lte: new Date(to) } : {}),

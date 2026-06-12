@@ -26,8 +26,8 @@ export function CouncilCard({ id, name, region, population, libraryCount, eventC
       </div>
       <div className="text-sm text-gray-500 space-y-1">
         {population != null && <div>Population: {population.toLocaleString()}</div>}
-        {libraryCount != null && <div>Libraries: {libraryCount}</div>}
-        {eventCount != null && <div>Upcoming events: {eventCount}</div>}
+        {libraryCount != null && libraryCount > 0 && <div>Libraries: {libraryCount}</div>}
+        {eventCount != null && <div>Upcoming events: {eventCount > 0 ? eventCount : '—'}</div>}
       </div>
     </Link>
   )

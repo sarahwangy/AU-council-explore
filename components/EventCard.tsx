@@ -5,6 +5,14 @@ const SOURCE_LABELS: Record<string, string> = {
   official: 'Official',
 }
 
+const AGE_LABELS: Record<string, string> = {
+  'kids-0-5': 'Kids 0–5',
+  'school-age': 'School Age',
+  'adult': 'Adult',
+  'senior': 'Senior',
+  'all-ages': 'All Ages',
+}
+
 interface Props {
   title: string
   council: string
@@ -13,9 +21,12 @@ interface Props {
   category?: string | null
   bookingUrl?: string | null
   source?: string | null
+  isFree?: boolean
+  requiresBooking?: boolean
+  ageGroup?: string | null
 }
 
-export function EventCard({ title, council, venue, startAt, category, bookingUrl, source }: Props) {
+export function EventCard({ title, council, venue, startAt, category, bookingUrl, source, isFree = true, requiresBooking = false, ageGroup }: Props) {
   const date = new Date(startAt)
   const dateStr = date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
@@ -30,13 +41,28 @@ export function EventCard({ title, council, venue, startAt, category, bookingUrl
           <p className="text-xs text-gray-400 mt-1">{dateStr} {timeStr}</p>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          {category && (
-            <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-              {category}
-            </span>
-          )}
+          <div className="flex flex-wrap justify-end gap-1">
+            {isFree && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                Free
+              </span>
+            )}
+            {ageGroup && AGE_LABELS[ageGroup] && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                {AGE_LABELS[ageGroup]}
+              </span>
+            )}
+            {category && (
+              <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                {category}
+              </span>
+            )}
+          </div>
           {sourceLabel && (
             <span className="text-xs text-gray-400">{sourceLabel}</span>
+          )}
+          {requiresBooking && (
+            <span className="text-xs text-orange-600 font-medium">Booking required</span>
           )}
           {bookingUrl && (
             <a

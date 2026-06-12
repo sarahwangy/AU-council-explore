@@ -5,14 +5,18 @@ const STORAGE_KEY = 'mce_favorites'
 
 interface Favorites {
   councils: string[]
+  libraries: string[] // library IDs
 }
 
+const DEFAULT: Favorites = { councils: [], libraries: [] }
+
 function load(): Favorites {
-  if (typeof window === 'undefined') return { councils: [] }
+  if (typeof window === 'undefined') return DEFAULT
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{"councils":[]}')
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
+    return { councils: stored.councils ?? [], libraries: stored.libraries ?? [] }
   } catch {
-    return { councils: [] }
+    return DEFAULT
   }
 }
 
@@ -21,7 +25,7 @@ function save(f: Favorites) {
 }
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<Favorites>({ councils: [] })
+  const [favorites, setFavorites] = useState<Favorites>(DEFAULT)
 
   useEffect(() => {
     setFavorites(load())
@@ -37,10 +41,25 @@ export function useFavorites() {
     })
   }, [])
 
+  const toggleLibrary = useCallback((id: string) => {
+    setFavorites(prev => {
+      const next = prev.libraries.includes(id)
+        ? { ...prev, libraries: prev.libraries.filter(l => l !== id) }
+        : { ...prev, libraries: [...prev.libraries, id] }
+      save(next)
+      return next
+    })
+  }, [])
+
   const isFavorite = useCallback(
     (id: string) => favorites.councils.includes(id),
     [favorites.councils]
   )
 
-  return { favorites, toggleCouncil, isFavorite }
+  const isLibraryFavorite = useCallback(
+    (id: string) => favorites.libraries.includes(id),
+    [favorites.libraries]
+  )
+
+  return { favorites, toggleCouncil, toggleLibrary, isFavorite, isLibraryFavorite }
 }
