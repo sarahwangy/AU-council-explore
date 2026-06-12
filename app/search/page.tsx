@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 
 interface EventResult {
   id: string
@@ -36,6 +37,7 @@ const SUGGESTIONS = [
   'kids craft ballarat',
   'english conversation frankston',
   'book club inner melbourne',
+  'makerspace bendigo',
 ]
 
 export default function SearchPage() {
@@ -78,7 +80,7 @@ export default function SearchPage() {
       <div className="mb-8 text-center">
         <div className="text-4xl mb-3">✨</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">AI Search</h1>
-        <p className="text-gray-500 text-sm">Ask in plain English — events, libraries, activities near you</p>
+        <p className="text-gray-500 text-sm">Ask in plain English — events, libraries, local activities near you</p>
       </div>
 
       {/* Search box */}
@@ -119,13 +121,19 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Loading skeleton */}
+      {/* Loading */}
       {loading && (
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-100 rounded w-3/4" />
-          <div className="h-4 bg-gray-100 rounded w-full" />
-          <div className="h-4 bg-gray-100 rounded w-5/6" />
-          <div className="h-4 bg-gray-100 rounded w-2/3" />
+        <div className="bg-linear-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="animate-spin text-lg">⟳</span>
+            <span className="text-sm font-semibold text-purple-700">Searching database + web…</span>
+          </div>
+          <div className="animate-pulse space-y-2.5">
+            <div className="h-3.5 bg-purple-100 rounded w-full" />
+            <div className="h-3.5 bg-purple-100 rounded w-5/6" />
+            <div className="h-3.5 bg-purple-100 rounded w-4/5" />
+            <div className="h-3.5 bg-purple-100 rounded w-3/4" />
+          </div>
         </div>
       )}
 
@@ -135,24 +143,32 @@ export default function SearchPage() {
       {/* Results */}
       {result && (
         <div className="space-y-6">
-          {/* AI Overview */}
+          {/* AI Overview with Markdown */}
           <div className="bg-linear-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <span className="text-lg">✨</span>
               <span className="text-sm font-semibold text-purple-700">AI Overview</span>
-              <span className="ml-auto text-[10px] text-gray-400 bg-white px-2 py-0.5 rounded-full border">Powered by Claude</span>
+              <span className="ml-auto text-[10px] text-gray-400 bg-white px-2 py-0.5 rounded-full border">Powered by Claude + Web</span>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{result.summary}</p>
+            <div className="prose prose-sm max-w-none text-gray-700
+              prose-headings:text-gray-800 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2
+              prose-h2:text-base prose-h3:text-sm
+              prose-strong:text-gray-900 prose-strong:font-semibold
+              prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
+              prose-ul:my-2 prose-li:my-0.5
+              prose-p:my-2 prose-p:leading-relaxed">
+              <ReactMarkdown>{result.summary}</ReactMarkdown>
+            </div>
           </div>
 
           {/* Matching libraries */}
           {result.libraries.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">📍 Nearby Libraries</h2>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">📍 Nearby Libraries</h2>
               <div className="space-y-2">
                 {result.libraries.map(lib => (
                   <div key={lib.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <span className="text-xl">📚</span>
+                    <span className="text-xl shrink-0">📚</span>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800">{lib.name}</p>
                       <p className="text-xs text-gray-400">{lib.address}{lib.suburb ? `, ${lib.suburb}` : ''} · {lib.councilName}</p>
@@ -170,7 +186,7 @@ export default function SearchPage() {
           {/* Matching events */}
           {result.events.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">🗓 Matching Events</h2>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">🗓 Matching Events</h2>
               <div className="space-y-2">
                 {result.events.map(e => {
                   const date = new Date(e.startAt)
@@ -182,8 +198,7 @@ export default function SearchPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-800 leading-snug">{e.title}</p>
                           <p className="text-xs text-gray-400 mt-0.5">
-                            {dateStr} · {timeStr}
-                            {e.venue && ` · ${e.venue}`}
+                            {dateStr} · {timeStr}{e.venue ? ` · ${e.venue}` : ''}
                           </p>
                           <p className="text-xs text-gray-400">{e.councilName}{e.libraryName ? ` — ${e.libraryName}` : ''}</p>
                         </div>
@@ -201,26 +216,19 @@ export default function SearchPage() {
                   )
                 })}
               </div>
+
+              <div className="text-center mt-4">
+                <Link href={`/events?q=${encodeURIComponent(query)}`} className="text-sm text-purple-600 hover:underline">
+                  See all events matching &ldquo;{query}&rdquo; →
+                </Link>
+              </div>
             </div>
           )}
 
-          {/* No results */}
           {result.events.length === 0 && result.libraries.length === 0 && (
             <div className="text-center py-8 text-gray-400">
               <p className="text-3xl mb-3">🔍</p>
-              <p className="text-sm">No events or libraries matched. Try different keywords or check the <Link href="/events" className="text-purple-600 underline">events page</Link>.</p>
-            </div>
-          )}
-
-          {/* See all link */}
-          {result.events.length > 0 && (
-            <div className="text-center">
-              <Link
-                href={`/events?q=${encodeURIComponent(query)}`}
-                className="text-sm text-purple-600 hover:underline"
-              >
-                See all events matching &ldquo;{query}&rdquo; →
-              </Link>
+              <p className="text-sm">No local database matches. Check the <Link href="/events" className="text-purple-600 underline">events page</Link> or try different keywords.</p>
             </div>
           )}
         </div>
