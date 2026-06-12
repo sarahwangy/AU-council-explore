@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const REGION_COLORS: Record<string, string> = {
   inner: '#7c3aed',
@@ -55,11 +55,15 @@ const UNIVERSITIES: UniversityPin[] = [
   { name: 'RMIT University', shortName: 'RMIT', campus: 'City', lat: -37.8080, lng: 144.9622, url: 'https://www.rmit.edu.au', color: '#E61E2A' },
   { name: 'RMIT University', shortName: 'RMIT', campus: 'Bundoora', lat: -37.7072, lng: 145.0495, url: 'https://www.rmit.edu.au/about/our-locations/bundoora', color: '#E61E2A' },
   { name: 'Deakin University', shortName: 'Deakin', campus: 'Burwood', lat: -37.8469, lng: 145.1153, url: 'https://www.deakin.edu.au/burwood', color: '#00A94F' },
+  { name: 'Deakin University', shortName: 'Deakin', campus: 'Geelong Waurn Ponds', lat: -38.1951, lng: 144.2965, url: 'https://www.deakin.edu.au/geelong', color: '#00A94F' },
+  { name: 'Deakin University', shortName: 'Deakin', campus: 'Geelong Waterfront', lat: -38.1455, lng: 144.3617, url: 'https://www.deakin.edu.au/geelong', color: '#00A94F' },
   { name: 'La Trobe University', shortName: 'La Trobe', campus: 'Bundoora', lat: -37.7215, lng: 145.0481, url: 'https://www.latrobe.edu.au', color: '#BE2BBB' },
   { name: 'Swinburne University', shortName: 'Swinburne', campus: 'Hawthorn', lat: -37.8225, lng: 145.0378, url: 'https://www.swinburne.edu.au', color: '#C41230' },
   { name: 'Victoria University', shortName: 'VU', campus: 'Footscray', lat: -37.7993, lng: 144.8996, url: 'https://www.vu.edu.au', color: '#00427A' },
   { name: 'Australian Catholic University', shortName: 'ACU', campus: 'Melbourne', lat: -37.8058, lng: 144.9626, url: 'https://www.acu.edu.au', color: '#1B3A6B' },
   { name: 'Federation University', shortName: 'FedUni', campus: 'Berwick', lat: -38.0320, lng: 145.3490, url: 'https://www.federation.edu.au', color: '#FF6900' },
+  { name: 'Federation University', shortName: 'FedUni', campus: 'Ballarat Mt Helen', lat: -37.5607, lng: 143.8597, url: 'https://www.federation.edu.au/campuses/ballarat', color: '#FF6900' },
+  { name: 'La Trobe University', shortName: 'La Trobe', campus: 'Bendigo', lat: -36.7523, lng: 144.2775, url: 'https://www.latrobe.edu.au/campuses/bendigo', color: '#BE2BBB' },
 ]
 
 function getLibraryOpenStatus(hoursJson: string | null): { todayHours: string | null; isOpen: boolean } | null {
@@ -83,7 +87,10 @@ export default function HomePage() {
   const mapRef = useRef<unknown>(null)
   const markersRef = useRef<unknown[]>([])
   const uniMarkersRef = useRef<unknown[]>([])
+  const geojsonRef = useRef<{ features: { properties: { lga_slug: string }; geometry: { type: string; coordinates: unknown[] } }[] } | null>(null)
+  const [geojsonReady, setGeojsonReady] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [councils, setCouncils] = useState<Council[]>([])
   const [hoveredCouncil, setHoveredCouncil] = useState<Council | null>(null)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
@@ -91,6 +98,9 @@ export default function HomePage() {
   const [libraries, setLibraries] = useState<LibraryPin[]>([])
   const [librariesLoaded, setLibrariesLoaded] = useState(false)
   const [showUniversities, setShowUniversities] = useState(false)
+  const [activeRegion, setActiveRegion] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [legendOpen, setLegendOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/councils').then(r => r.json()).then(setCouncils)
@@ -104,6 +114,77 @@ export default function HomePage() {
     }
     setShowLibraries(prev => !prev)
   }, [showLibraries, librariesLoaded])
+
+  // Update fill opacity when activeRegion changes
+  useEffect(() => {
+    if (!mapRef.current) return
+    import('mapbox-gl').then(({ default: mapboxgl }) => {
+      const map = mapRef.current as mapboxgl.Map
+      if (!map.getLayer('lga-fill')) return
+      if (!activeRegion) {
+        map.setPaintProperty('lga-fill', 'fill-opacity', 0.5)
+        return
+      }
+      const regionSlugs = councils.filter(c => c.region === activeRegion).map(c => c.id)
+      const opacityExpr: unknown[] = ['match', ['get', 'lga_slug'], ...regionSlugs.flatMap(s => [s, 0.75]), 0.15]
+      map.setPaintProperty('lga-fill', 'fill-opacity', opacityExpr as mapboxgl.Expression)
+    })
+  }, [activeRegion, councils])
+
+  const flyToRegion = useCallback((region: string) => {
+    const next = activeRegion === region ? null : region
+    setActiveRegion(next)
+    if (!next || !mapRef.current || !geojsonRef.current) return
+
+    import('mapbox-gl').then(({ default: mapboxgl }) => {
+      const map = mapRef.current as mapboxgl.Map
+      const regionSlugs = new Set(councils.filter(c => c.region === next).map(c => c.id))
+      const features = geojsonRef.current!.features.filter(f => regionSlugs.has(f.properties.lga_slug))
+      if (features.length === 0) return
+
+      // Compute bounding box from all polygon coordinates
+      let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+      function scanCoords(coords: unknown[]) {
+        if (typeof coords[0] === 'number') {
+          const [lng, lat] = coords as number[]
+          if (lng < minLng) minLng = lng
+          if (lng > maxLng) maxLng = lng
+          if (lat < minLat) minLat = lat
+          if (lat > maxLat) maxLat = lat
+        } else {
+          for (const c of coords) scanCoords(c as unknown[])
+        }
+      }
+      for (const f of features) scanCoords(f.geometry.coordinates)
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 40, duration: 800 })
+    })
+  }, [activeRegion, councils])
+
+  const flyToCouncil = useCallback((slug: string) => {
+    if (!mapRef.current || !geojsonRef.current) return
+    const feature = geojsonRef.current.features.find(f => f.properties.lga_slug === slug)
+    if (!feature) return
+    import('mapbox-gl').then(({ default: mapboxgl }) => {
+      const map = mapRef.current as mapboxgl.Map
+      let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+      function scanCoords(coords: unknown[]) {
+        if (typeof coords[0] === 'number') {
+          const [lng, lat] = coords as number[]
+          if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng
+          if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat
+        } else { for (const c of coords) scanCoords(c as unknown[]) }
+      }
+      scanCoords(feature.geometry.coordinates)
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 60, duration: 800 })
+    })
+  }, [])
+
+  // Auto-fly when arriving via "View on map" link (waits for geojson to load)
+  const highlightSlug = searchParams.get('council')
+  useEffect(() => {
+    if (!highlightSlug || !geojsonReady) return
+    flyToCouncil(highlightSlug)
+  }, [highlightSlug, geojsonReady, flyToCouncil])
 
   // Add/remove university markers when toggle changes
   useEffect(() => {
@@ -224,6 +305,8 @@ export default function HomePage() {
           return
         }
 
+        geojsonRef.current = geojson
+        setGeojsonReady(true)
         map.addSource('lgas', { type: 'geojson', data: geojson })
 
         // Build color expression
@@ -292,6 +375,41 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Search box */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-64 sm:w-80">
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <input
+            type="text"
+            placeholder="Search council…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-3 py-2.5 rounded-xl shadow-lg text-sm bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/40"
+          />
+          {searchQuery && (
+            <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-56 overflow-y-auto z-20">
+              {councils
+                .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .slice(0, 8)
+                .map(c => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                    onClick={() => { flyToCouncil(c.id); setSearchQuery('') }}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: REGION_COLORS[c.region] ?? '#e5e7eb' }} />
+                    <span>{c.name}</span>
+                  </button>
+                ))}
+              {councils.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                <p className="px-3 py-2 text-sm text-gray-400">No councils found</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Toggle buttons */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         <button
@@ -322,13 +440,44 @@ export default function HomePage() {
 
       {/* Legend */}
       <div className="absolute bottom-8 right-4 bg-white rounded-lg shadow-lg p-3 text-xs">
-        <p className="font-semibold mb-2 text-gray-700">Regions</p>
+        <button
+          type="button"
+          onClick={() => setLegendOpen(v => !v)}
+          className="flex items-center justify-between w-full gap-4 sm:cursor-default"
+        >
+          <p className="font-semibold text-gray-700">Regions</p>
+          <span className="sm:hidden text-gray-400">{legendOpen ? '▲' : '▼'}</span>
+        </button>
+        <div className={`${legendOpen ? 'block' : 'hidden'} sm:block mt-2`}>
         {Object.entries(REGION_LABELS).map(([key, label]) => (
-          <div key={key} className="flex items-center gap-2 mb-1">
-            <div className="w-3 h-3 rounded-sm" data-region={key} style={{ backgroundColor: REGION_COLORS[key] }} />
-            <span className="text-gray-600">{label}</span>
-          </div>
+          <button
+            key={key}
+            type="button"
+            onClick={() => flyToRegion(key)}
+            className={`flex items-center gap-2 mb-1 w-full rounded px-1 py-0.5 transition-colors cursor-pointer hover:bg-gray-50 ${
+              activeRegion === key ? 'ring-1 ring-gray-400 bg-gray-50' : ''
+            }`}
+          >
+            <div
+              className="w-3 h-3 rounded-sm shrink-0 transition-transform"
+              style={{
+                backgroundColor: REGION_COLORS[key],
+                transform: activeRegion === key ? 'scale(1.3)' : 'scale(1)',
+              }}
+            />
+            <span className={activeRegion === key ? 'font-semibold text-gray-800' : 'text-gray-600'}>{label}</span>
+          </button>
         ))}
+        {activeRegion && (
+          <button
+            type="button"
+            onClick={() => setActiveRegion(null)}
+            className="mt-1 w-full text-center text-gray-400 hover:text-gray-600 text-[10px]"
+          >
+            Show all
+          </button>
+        )}
+        </div>
       </div>
 
       {/* Fallback when no token */}

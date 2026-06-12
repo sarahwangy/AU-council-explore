@@ -74,9 +74,14 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <Link href="/councils" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-6 group">
-        <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back to Councils
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/councils" className="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 group">
+          <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back to Councils
+        </Link>
+        <Link href={`/?council=${council.id}`} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-(--color-primary) transition-colors">
+          <span>🗺️</span> View on map
+        </Link>
+      </div>
       <div className="flex items-center gap-3 mb-2">
         <h1 className="text-3xl font-bold text-(--color-primary)">{council.name}</h1>
         <FavoriteButton councilId={council.id} className="text-(--color-accent) text-2xl" />
