@@ -38,6 +38,16 @@ export function AppNav({ locale }: { locale: string }) {
           {navLink('/libraries', t('libraries'))}
           {navLink('/schools', t('schools'))}
           {navLink('/my-events', `★ ${t('myEvents')}`)  }
+          <Link
+            href="/search"
+            className={`flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-semibold transition-all ${
+              pathname.startsWith('/search')
+                ? 'bg-white/20 text-white'
+                : 'bg-white/10 hover:bg-white/20 text-white/90'
+            }`}
+          >
+            ✨ AI
+          </Link>
           <LocaleSwitcher current={locale} />
         </div>
       </div>

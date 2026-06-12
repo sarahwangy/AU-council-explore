@@ -23,6 +23,7 @@ Sensitive keys in this project:
 - `HUMANITIX_API_KEY` — event scraper
 - `NEXT_PUBLIC_MAPBOX_TOKEN` — map tiles
 - `CRON_SECRET` — cron endpoint auth
+- `ANTHROPIC_API_KEY` — Claude AI search feature
 
 If you need to verify a key is configured, use:
 ```bash
