@@ -120,7 +120,7 @@ export default async function EventsPage({ searchParams }: Props) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-(--color-primary) mb-1">Community Events</h1>
-        <p className="text-gray-500 text-sm">Library and council events across Melbourne</p>
+        <p className="text-gray-500 text-sm">Library and council events across Victoria</p>
       </div>
 
       {/* Filter card */}
