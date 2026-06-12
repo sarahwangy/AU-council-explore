@@ -1,6 +1,6 @@
 {
   "nav": {
-    "title": "Melbourne Council Explorer",
+    "title": "Victoria Council Explorer",
     "map": "Map",
     "councils": "Councils",
     "events": "Events",
@@ -10,7 +10,7 @@
     "schools": "Schools"
   },
   "councils": {
-    "heading": "Melbourne Councils",
+    "heading": "Victorian Councils",
     "count": "{count} councils",
     "search": "Search councils...",
     "regions": {
@@ -20,7 +20,8 @@
       "southern": "Southern",
       "northern": "Northern",
       "western": "Western",
-      "outer": "Outer"
+      "outer": "Outer",
+      "regional": "Regional"
     },
     "card": {
       "population": "Population",
@@ -72,7 +73,7 @@
     }
   },
   "events": {
-    "heading": "Melbourne Library Events",
+    "heading": "Victorian Library Events",
     "allCouncils": "All councils",
     "allCategories": "All categories",
     "today": "Today",

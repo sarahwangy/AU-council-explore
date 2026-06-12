@@ -1,6 +1,6 @@
 {
   "nav": {
-    "title": "墨尔本社区指南",
+    "title": "维州社区指南",
     "map": "地图",
     "councils": "地区列表",
     "events": "活动日历",
@@ -10,7 +10,7 @@
     "schools": "学区查询"
   },
   "councils": {
-    "heading": "墨尔本各地区",
+    "heading": "维州各地区",
     "count": "{count} 个地区",
     "search": "搜索地区...",
     "regions": {
@@ -20,7 +20,8 @@
       "southern": "南区",
       "northern": "北区",
       "western": "西区",
-      "outer": "外环"
+      "outer": "外环",
+      "regional": "区域城市"
     },
     "card": {
       "population": "人口",
@@ -72,7 +73,7 @@
     }
   },
   "events": {
-    "heading": "墨尔本图书馆活动",
+    "heading": "维州图书馆活动",
     "allCouncils": "全部地区",
     "allCategories": "全部类别",
     "today": "今天",
