@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { EventCard } from '@/components/EventCard'
+import { StateTabs } from '@/components/StateTabs'
+import { Suspense } from 'react'
 
 const CATEGORIES = ['English', 'Children', 'Cultural', 'Health', 'Craft', 'Reading']
 
@@ -22,6 +24,7 @@ interface Props {
     free?: string
     noBooking?: string
     q?: string
+    state?: string
   }>
 }
 
@@ -54,8 +57,41 @@ function toInputDate(d: Date) {
   return d.toISOString().slice(0, 10)
 }
 
+async function NonVicEventsNotice({ state }: { state: string }) {
+  const councils = await prisma.council.findMany({
+    where: { state },
+    select: { id: true, name: true, libraryUrl: true },
+    orderBy: { name: 'asc' },
+  })
+  return (
+    <div className="mb-8">
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+        <p className="font-semibold text-amber-800 mb-1">📋 {state} event data not yet collected</p>
+        <p className="text-sm text-amber-700">
+          We don&apos;t scrape {state} council event systems yet. Visit each council&apos;s library website directly to find upcoming programs and events.
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {councils.map(c => (
+          <div key={c.id} className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="font-medium text-gray-800 mb-2">{c.name}</p>
+            {c.libraryUrl && (
+              <a href={c.libraryUrl} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-purple-700 hover:underline">
+                📚 Library Events →
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function EventsPage({ searchParams }: Props) {
   const sp = await searchParams
+  const { state: stateParam } = sp
+  const activeState = stateParam ?? 'VIC'
   const page = parseInt(sp.page ?? '1')
   const limit = 20
   const council = Array.isArray(sp.council) ? sp.council[0] : sp.council
@@ -131,6 +167,15 @@ export default async function EventsPage({ searchParams }: Props) {
         </a>
       </div>
 
+      <Suspense fallback={null}>
+        <StateTabs basePath="/events" />
+      </Suspense>
+
+      {activeState !== 'VIC' && (
+        <NonVicEventsNotice state={activeState} />
+      )}
+
+      {activeState === 'VIC' && (<>
       {/* Filter card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
         <form method="get" action="/events" className="flex flex-wrap gap-4 items-end">
@@ -374,6 +419,7 @@ export default async function EventsPage({ searchParams }: Props) {
           )}
         </div>
       )}
+      </>)}
     </main>
   )
 }
