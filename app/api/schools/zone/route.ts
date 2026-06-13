@@ -51,19 +51,6 @@ function getBbox(feature: ZoneFeature): [number, number, number, number] {
   return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)]
 }
 
-function findSchools(lat: number, lng: number, zones: GeoJSON): ZoneFeature['properties'][] {
-  const pt = point([lng, lat])
-  const results: ZoneFeature['properties'][] = []
-  for (const feature of zones.features) {
-    // Bounding box pre-filter for performance
-    const [minLng, minLat, maxLng, maxLat] = getBbox(feature)
-    if (lng < minLng || lng > maxLng || lat < minLat || lat > maxLat) continue
-    if (booleanPointInPolygon(pt, feature as Parameters<typeof booleanPointInPolygon>[1])) {
-      results.push(feature.properties)
-    }
-  }
-  return results
-}
 
 // Simple suburb lookup from Mapbox reverse geocode
 async function getSuburb(lat: number, lng: number): Promise<string> {
@@ -94,29 +81,51 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: `Zone data not loaded: ${msg}` }, { status: 500 })
   }
 
-  const primaryMatches = findSchools(lat, lng, primaryZones!)
-  const secondaryMatches = findSchools(lat, lng, secondaryZones!)
+  // Find matched features (with geometry) for the map
+  function findFeatures(lat: number, lng: number, zones: GeoJSON): ZoneFeature[] {
+    const pt = point([lng, lat])
+    const results: ZoneFeature[] = []
+    for (const feature of zones.features) {
+      const [minLng, minLat, maxLng, maxLat] = getBbox(feature)
+      if (lng < minLng || lng > maxLng || lat < minLat || lat > maxLat) continue
+      if (booleanPointInPolygon(pt, feature as Parameters<typeof booleanPointInPolygon>[1])) {
+        results.push(feature)
+      }
+    }
+    return results
+  }
+
+  const primaryFeatures = findFeatures(lat, lng, primaryZones!)
+  const secondaryFeatures = findFeatures(lat, lng, secondaryZones!)
 
   const schools = [
-    ...primaryMatches.map(p => ({
-      name: p.School_Name,
+    ...primaryFeatures.map(f => ({
+      name: f.properties.School_Name,
       type: 'primary',
       address: '',
       suburb: '',
       education_sector: 'government',
-      entityCode: p.ENTITY_CODE,
+      entityCode: f.properties.ENTITY_CODE,
     })),
-    ...secondaryMatches.map(p => ({
-      name: p.School_Name,
+    ...secondaryFeatures.map(f => ({
+      name: f.properties.School_Name,
       type: 'secondary',
       address: '',
       suburb: '',
       education_sector: 'government',
-      entityCode: p.ENTITY_CODE,
+      entityCode: f.properties.ENTITY_CODE,
     })),
   ]
 
+  const zones = {
+    type: 'FeatureCollection',
+    features: [
+      ...primaryFeatures.map(f => ({ ...f, properties: { ...f.properties, zoneType: 'primary' } })),
+      ...secondaryFeatures.map(f => ({ ...f, properties: { ...f.properties, zoneType: 'secondary' } })),
+    ],
+  }
+
   const suburb = await getSuburb(lat, lng)
 
-  return NextResponse.json({ schools, suburb })
+  return NextResponse.json({ schools, suburb, zones })
 }
