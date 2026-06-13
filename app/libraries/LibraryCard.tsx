@@ -22,7 +22,7 @@ export interface NearbyLibrary extends LibraryItem {
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 const DAY_LABELS: Record<string, string> = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' }
 
-function getOpenStatus(hoursJson: string | null): { todayHours: string | null; isOpen: boolean } | null {
+export function getOpenStatus(hoursJson: string | null): { todayHours: string | null; isOpen: boolean } | null {
   if (!hoursJson) return null
   try {
     const hours = JSON.parse(hoursJson) as Record<string, string | null>
