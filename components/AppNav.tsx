@@ -37,6 +37,7 @@ export function AppNav({ locale }: { locale: string }) {
           {navLink('/compare', t('compare'))}
           {navLink('/libraries', t('libraries'))}
           {navLink('/schools', t('schools'))}
+          {navLink('/states', t('states'))}
           {navLink('/my-events', `★ ${t('myEvents')}`)  }
           <Link
             href="/search"
