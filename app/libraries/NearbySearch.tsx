@@ -34,7 +34,13 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
-export function NearbySearch() {
+const STATE_FULL_NAMES: Record<string, string> = {
+  VIC: 'Victoria', NSW: 'New South Wales', QLD: 'Queensland',
+  SA: 'South Australia', WA: 'Western Australia', TAS: 'Tasmania',
+  NT: 'Northern Territory', ACT: 'Australian Capital Territory',
+}
+
+export function NearbySearch({ activeState = 'VIC' }: { activeState?: string }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -55,8 +61,9 @@ export function NearbySearch() {
     }
     const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
     if (!token) return
+    const stateName = STATE_FULL_NAMES[activeState] ?? 'Australia'
     fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(debouncedQuery + ', Victoria, Australia')}.json?access_token=${token}&country=AU&proximity=145.0,-37.8&limit=5&types=address,postcode,locality,neighborhood`
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(debouncedQuery + ', ' + stateName + ', Australia')}.json?access_token=${token}&country=AU&limit=5&types=address,postcode,locality,neighborhood`
     )
       .then(r => r.json())
       .then((data: { features?: { place_name: string; center: [number, number] }[] }) => {
@@ -64,7 +71,7 @@ export function NearbySearch() {
         setShowSuggestions(true)
       })
       .catch(() => {})
-  }, [debouncedQuery, selectedLngLat])
+  }, [debouncedQuery, selectedLngLat, activeState])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -103,15 +110,16 @@ export function NearbySearch() {
       if (selectedLngLat) {
         ;[lng, lat] = selectedLngLat
       } else {
-        const q = encodeURIComponent(`${query.trim()}, Victoria, Australia`)
-        const geoRes = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${q}.json?access_token=${token}&country=AU&proximity=145.0,-37.8&limit=1`)
+        const stateName = STATE_FULL_NAMES[activeState] ?? 'Australia'
+        const q = encodeURIComponent(`${query.trim()}, ${stateName}, Australia`)
+        const geoRes = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${q}.json?access_token=${token}&country=AU&limit=1`)
         const geoData = await geoRes.json() as { features?: { center: [number, number] }[] }
         const feature = geoData.features?.[0]
         if (!feature) { setNearbyError('Suburb not found — try another name'); return }
         ;[lng, lat] = feature.center
       }
 
-      const res = await fetch(`/api/libraries/nearby?lat=${lat}&lng=${lng}&limit=8`)
+      const res = await fetch(`/api/libraries/nearby?lat=${lat}&lng=${lng}&limit=8&state=${activeState}`)
       setSearchCenter([lng, lat])
       setNearbyResults(await res.json())
     } catch {
@@ -136,7 +144,9 @@ export function NearbySearch() {
     <section className="mb-10">
       <div className="bg-linear-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-100 p-6">
         <h2 className="text-base font-semibold text-purple-800 mb-1">Find libraries near you</h2>
-        <p className="text-sm text-purple-500 mb-4">Enter your suburb or address to find the 8 closest libraries</p>
+        <p className="text-sm text-purple-500 mb-4">
+          Enter your suburb or address to find the closest libraries in {STATE_FULL_NAMES[activeState] ?? activeState}
+        </p>
         <form onSubmit={searchNearby} className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -145,7 +155,7 @@ export function NearbySearch() {
               value={query}
               onChange={e => { setQuery(e.target.value); setSelectedLngLat(null) }}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-              placeholder="e.g. Fitzroy, Clayton, 3168…"
+              placeholder={activeState === 'VIC' ? 'e.g. Fitzroy, Clayton, 3168…' : activeState === 'NSW' ? 'e.g. Newtown, Parramatta…' : activeState === 'QLD' ? 'e.g. Brisbane CBD, Cairns…' : 'e.g. suburb or postcode…'}
               className="w-full px-4 py-2.5 border border-purple-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
               autoComplete="off"
             />

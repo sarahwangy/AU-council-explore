@@ -16,14 +16,19 @@ export async function GET(request: Request) {
   const lat = parseFloat(searchParams.get('lat') ?? '')
   const lng = parseFloat(searchParams.get('lng') ?? '')
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '5'), 20)
+  const state = searchParams.get('state') ?? undefined
 
   if (isNaN(lat) || isNaN(lng)) {
     return NextResponse.json({ error: 'lat and lng required' }, { status: 400 })
   }
 
   const libraries = await prisma.library.findMany({
-    where: { lat: { not: null }, lng: { not: null } },
-    select: { id: true, name: true, councilId: true, address: true, suburb: true, url: true, lat: true, lng: true, hoursJson: true },
+    where: {
+      lat: { not: null },
+      lng: { not: null },
+      ...(state ? { council: { state } } : {}),
+    },
+    select: { id: true, name: true, councilId: true, address: true, suburb: true, url: true, lat: true, lng: true, hoursJson: true, phone: true },
   })
 
   const withDistance = libraries

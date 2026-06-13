@@ -64,25 +64,36 @@ export default async function LibrariesPage({ searchParams }: Props) {
     }))
     .sort((a, b) => a.name.localeCompare(b.name))
 
+  const STATE_NAMES: Record<string, string> = {
+    VIC: 'Victorian', NSW: 'New South Wales', QLD: 'Queensland',
+    SA: 'South Australian', WA: 'Western Australian', TAS: 'Tasmanian',
+    NT: 'Northern Territory', ACT: 'ACT',
+  }
+  const stateName = STATE_NAMES[activeState] ?? activeState
+
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-purple-700 mb-1">📚 Libraries</h1>
-        <p className="text-gray-400 text-sm">{libraries.length} branches across Victorian councils</p>
+        <p className="text-gray-400 text-sm">
+          {activeState === 'VIC'
+            ? `${libraries.length} branches across Victorian councils`
+            : `${stateName} council libraries`}
+        </p>
       </div>
 
       <Suspense fallback={null}>
         <StateTabs basePath="/libraries" />
       </Suspense>
 
+      {/* Nearby search — shown for all states */}
+      <NearbySearch activeState={activeState} />
+
       {activeState !== 'VIC' ? (
         <NonVicLibraryNotice state={activeState} />
       ) : (
         <>
-          {/* Nearby search — client component */}
-          <NearbySearch />
-
           {/* Council filter + full list — client component for interactive dropdown */}
           <LibraryList grouped={grouped} />
 
