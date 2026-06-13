@@ -216,15 +216,15 @@ const STATE_LIBRARIES: Record<string, { name: string; suburb: string; lat: numbe
   ],
   QLD: [
     { name: 'State Library of Queensland', suburb: 'South Bank', lat: -27.4755, lng: 153.0197, url: 'https://www.slq.qld.gov.au' },
-    { name: 'Brisbane Square Library', suburb: 'Brisbane CBD', lat: -27.4679, lng: 153.0236, url: 'https://library.brisbane.qld.gov.au' },
-    { name: 'Chermside Library', suburb: 'Chermside', lat: -27.3876, lng: 153.0318, url: 'https://library.brisbane.qld.gov.au' },
-    { name: 'Sunnybank Hills Library', suburb: 'Sunnybank Hills', lat: -27.5887, lng: 153.0469, url: 'https://library.brisbane.qld.gov.au' },
-    { name: 'Robina Library', suburb: 'Gold Coast', lat: -28.0778, lng: 153.3789, url: 'https://library.goldcoast.qld.gov.au' },
+    { name: 'Brisbane Square Library', suburb: 'Brisbane CBD', lat: -27.4679, lng: 153.0236, url: 'https://www.brisbane.qld.gov.au/library' },
+    { name: 'Chermside Library', suburb: 'Chermside', lat: -27.3876, lng: 153.0318, url: 'https://www.brisbane.qld.gov.au/library' },
+    { name: 'Sunnybank Hills Library', suburb: 'Sunnybank Hills', lat: -27.5887, lng: 153.0469, url: 'https://www.brisbane.qld.gov.au/library' },
+    { name: 'Robina Library', suburb: 'Gold Coast', lat: -28.0778, lng: 153.3789, url: 'https://www.goldcoast.qld.gov.au/library' },
     { name: 'Sunshine Coast Library HQ', suburb: 'Maroochydore', lat: -26.6533, lng: 153.0893, url: 'https://library.sunshinecoast.qld.gov.au' },
   ],
   SA: [
     { name: 'State Library of South Australia', suburb: 'Adelaide CBD', lat: -34.9231, lng: 138.5988, url: 'https://www.slsa.sa.gov.au' },
-    { name: 'Adelaide City Library', suburb: 'Adelaide CBD', lat: -34.9270, lng: 138.5999, url: 'https://adelaidecitylibraries.com.au' },
+    { name: 'Adelaide City Library', suburb: 'Adelaide CBD', lat: -34.9270, lng: 138.5999, url: 'https://www.cityofadelaide.com.au/community/libraries' },
     { name: 'Prospect Library', suburb: 'Prospect', lat: -34.8871, lng: 138.5992, url: 'https://www.prospect.sa.gov.au/library' },
     { name: 'Tea Tree Gully Library', suburb: 'Modbury', lat: -34.8310, lng: 138.6866, url: 'https://www.teatreegully.sa.gov.au/library' },
     { name: 'Holdfast Bay Library', suburb: 'Glenelg', lat: -34.9826, lng: 138.5151, url: 'https://www.holdfast.sa.gov.au/library' },
@@ -232,8 +232,8 @@ const STATE_LIBRARIES: Record<string, { name: string; suburb: string; lat: numbe
   WA: [
     { name: 'State Library of Western Australia', suburb: 'Perth CBD', lat: -31.9528, lng: 115.8605, url: 'https://slwa.wa.gov.au' },
     { name: 'Perth City Library', suburb: 'Perth CBD', lat: -31.9552, lng: 115.8590, url: 'https://www.perth.wa.gov.au/library' },
-    { name: 'Mirrabooka Library', suburb: 'Mirrabooka', lat: -31.8618, lng: 115.8605, url: 'https://www.stirling.wa.gov.au/library' },
-    { name: 'Joondalup Library', suburb: 'Joondalup', lat: -31.7459, lng: 115.7675, url: 'https://www.joondalup.wa.gov.au/library' },
+    { name: 'Mirrabooka Library', suburb: 'Mirrabooka', lat: -31.8618, lng: 115.8605, url: 'https://www.stirling.wa.gov.au/attractions-and-recreation/libraries-and-hubs' },
+    { name: 'Joondalup Library', suburb: 'Joondalup', lat: -31.7459, lng: 115.7675, url: 'https://www.joondalup.wa.gov.au/community-and-spaces/libraries' },
     { name: 'Fremantle Library', suburb: 'Fremantle', lat: -32.0550, lng: 115.7476, url: 'https://www.fremantle.wa.gov.au/library' },
     { name: 'Midland Library', suburb: 'Midland', lat: -31.8893, lng: 116.0028, url: 'https://www.swan.wa.gov.au/library' },
   ],
@@ -246,8 +246,8 @@ const STATE_LIBRARIES: Record<string, { name: string; suburb: string; lat: numbe
   NT: [
     { name: 'NT Library', suburb: 'Darwin CBD', lat: -12.4634, lng: 130.8456, url: 'https://www.ntl.nt.gov.au' },
     { name: 'Darwin City Library', suburb: 'Darwin', lat: -12.4634, lng: 130.8440, url: 'https://www.darwin.nt.gov.au/community/libraries' },
-    { name: 'Alice Springs Public Library', suburb: 'Alice Springs', lat: -23.7020, lng: 133.8807, url: 'https://www.alicesprings.nt.gov.au/community/library' },
-    { name: 'Palmerston Library', suburb: 'Palmerston', lat: -12.4877, lng: 130.9830, url: 'https://www.palmerston.nt.gov.au/community/libraries' },
+    { name: 'Alice Springs Public Library', suburb: 'Alice Springs', lat: -23.7020, lng: 133.8807, url: 'https://www.alicesprings.nt.gov.au/residents/facilities/library' },
+    { name: 'Palmerston Library', suburb: 'Palmerston', lat: -12.4877, lng: 130.9830, url: 'https://www.palmerston.nt.gov.au/library' },
   ],
 }
 
