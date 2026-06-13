@@ -61,22 +61,22 @@ const NON_VIC_RESOURCES: Record<string, { name: string; url: string; desc: strin
     { name: 'Find My Local School (NSW)', url: 'https://education.nsw.gov.au/schooling/going-to-a-government-school/find-your-local-school', desc: 'Official NSW Department of Education zone finder' },
   ],
   QLD: [
-    { name: 'School Zones (QLD)', url: 'https://schoolzones.education.qld.gov.au', desc: 'Official Queensland school catchment zone checker' },
+    { name: 'School Catchments (QLD)', url: 'https://schoolzones.eq.edu.au', desc: 'Official Queensland Education school catchment zone checker' },
   ],
   SA: [
-    { name: 'Find My School (SA)', url: 'https://www.findmyschool.sa.edu.au', desc: 'South Australia school enrolment zone tool' },
+    { name: 'Find a School (SA)', url: 'https://www.education.sa.gov.au/students-and-families/enrolment/find-school', desc: 'South Australia Department for Education school finder' },
   ],
   WA: [
-    { name: 'Find a Public School (WA)', url: 'https://www.education.wa.edu.au/web/public-schools/find-a-school', desc: 'Western Australia school finder' },
+    { name: 'Find a Public School (WA)', url: 'https://www.education.wa.edu.au/web/public-schools/find-a-school', desc: 'Western Australia school finder and local intake areas' },
   ],
   TAS: [
-    { name: 'Schools (TAS)', url: 'https://education.tas.gov.au/parents-carers/schools-colleges', desc: 'Tasmania Department for Education schools list' },
+    { name: 'Find a School (TAS)', url: 'https://www.education.tas.gov.au/parents-carers/find-a-school/', desc: 'Tasmania Department for Education school directory' },
   ],
   NT: [
     { name: 'Find a School (NT)', url: 'https://education.nt.gov.au/schools-and-the-department/find-a-school', desc: 'Northern Territory school finder' },
   ],
   ACT: [
-    { name: 'School Enrolment (ACT)', url: 'https://www.education.act.gov.au/public-school-life/enrolling-in-a-public-school', desc: 'ACT Education Directorate enrolment info' },
+    { name: 'School Enrolment (ACT)', url: 'https://www.education.act.gov.au/public-school-life/enrolling-in-a-public-school', desc: 'ACT Education Directorate enrolment and zone info' },
   ],
 }
 
@@ -180,7 +180,7 @@ export default function SchoolsPage() {
           const revData = await revRes.json() as { features?: { text: string }[] }
           suburb = revData.features?.[0]?.text ?? ''
         }
-        setSearch({ status: 'done', address: resolvedAddress, results: [], zones: null, errorMsg: '', suburb, lat, lng })
+        setSearch({ status: 'done', address: resolvedAddress, results: [], zones: { type: 'FeatureCollection', features: [] }, errorMsg: '', suburb, lat, lng })
       }
     } catch (err) {
       setSearch(s => ({ ...s, status: 'error', errorMsg: err instanceof Error ? err.message : 'Search failed' }))
@@ -297,8 +297,8 @@ export default function SchoolsPage() {
                 {suburb && <> · <span className="text-blue-600">{suburb}</span></>}
               </p>
 
-              {/* Map — VIC with zones, or other states just show pin */}
-              {lat !== null && lng !== null && (activeState === 'VIC' || true) && zones && (
+              {/* Map — VIC shows zone polygons, other states show just the address pin */}
+              {lat !== null && lng !== null && zones !== null && (
                 <SchoolZoneMap
                   centerLat={lat}
                   centerLng={lng}
