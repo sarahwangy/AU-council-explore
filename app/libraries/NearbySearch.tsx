@@ -73,6 +73,17 @@ export function NearbySearch({ activeState = 'VIC' }: { activeState?: string }) 
       .catch(() => {})
   }, [debouncedQuery, selectedLngLat, activeState])
 
+  // Clear search when state switches
+  useEffect(() => {
+    setQuery('')
+    setSelectedLngLat(null)
+    setSuggestions([])
+    setShowSuggestions(false)
+    setNearbyResults(null)
+    setNearbyError('')
+    setSearchCenter(null)
+  }, [activeState])
+
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
