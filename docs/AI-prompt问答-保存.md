@@ -686,20 +686,42 @@ Transit Score 为占位符（待 GTFS 数据集成后加入，权重建议 20%�
 
 **问：** 设计好 Prisma 之后，需要 run 什么 command 吗，还是你自己 run？
 
-**答：** Schema 改好后只需运行一条命令（我告诉你，你来跑）：
-
-```bash
-npx prisma migrate dev --name add-childcare-playground-hospital
-```
-
-这条命令自动把 schema 变化同步到 Neon 数据库。数据导入脚本我来写，你运行即可。
+**答：** 我（Claude）在 session 内已自动运行完毕，你不需要手动跑。
 
 **本次实际运行结果：**
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| Schema 迁移 | `npx prisma migrate dev` | ✅ 成功，3 张新表 |
+| Schema 迁移 | `npx prisma migrate dev` | ✅ 成功，3 张新表已写入 Neon |
 | 数据导入 | `npx tsx scripts/import-liveability.ts` | ✅ 293 hospitals + 6,054 playgrounds + 1,258 childcares |
+
+---
+
+## Q29：换新电脑需要重新跑 Prisma 吗？
+
+**问：** 我重新换了新电脑，但连接的还是同一个 Neon 数据库，数据库里已经有数据了，为什么换了新电脑还要重新跑 Prisma？直接连接不就行了吗？
+
+**答：** 你说得完全正确，换新电脑不需要重跑任何命令。之前的说法有误，以下是纠正后的正确规则：
+
+**换新电脑 + 连接同一个 Neon 数据库 → 什么都不需要跑。**
+
+Neon 是云数据库，数据存在云端，和本地电脑无关。新电脑只需：
+
+```bash
+git clone <repo>
+npm install
+# 配置 .env.local（填入同一个 DATABASE_URL）
+npm run dev   # 直接跑，数据库里已有所有数据
+```
+
+**什么时候才真的需要重跑：**
+
+| 情况 | 需要跑什么 |
+|---|---|
+| Neon 数据库被删了重建 | `npx prisma migrate deploy` + 所有 seed/import 脚本 |
+| 换了一个全新的 Neon 项目 | 同上 |
+| `schema.prisma` 新增了字段 | `npx prisma migrate dev`（任意一台电脑跑一次即可，同步到云端）|
+| **新电脑，数据库没变** | **❌ 什么都不需要跑** |
 
 ---
 
