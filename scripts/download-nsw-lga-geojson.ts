@@ -37,16 +37,20 @@ async function main() {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const raw = await res.json() as { features: { properties: Record<string, string>; geometry: unknown }[] }
 
-  const features = raw.features.map(f => ({
-    ...f,
-    properties: {
-      ...f.properties,
-      lga_slug: slugify(f.properties.LGA_NAME_2021 ?? ''),
-      lga_name: f.properties.LGA_NAME_2021,
-      lga_region: getNswRegion(f.properties.LGA_NAME_2021 ?? ''),
-      lga_state: 'NSW',
-    },
-  }))
+  const features = raw.features.map(f => {
+    // ABS API returns lowercase field names
+    const rawName = (f.properties.LGA_NAME_2021 ?? f.properties.lga_name_2021 ?? '') as string
+    return {
+      ...f,
+      properties: {
+        ...f.properties,
+        lga_slug: slugify(rawName),
+        lga_name: rawName,
+        lga_region: getNswRegion(rawName),
+        lga_state: 'NSW',
+      },
+    }
+  })
 
   const geojson = { type: 'FeatureCollection', features }
   const outPath = path.join(process.cwd(), 'public', 'nsw-lgas.geojson')

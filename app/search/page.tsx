@@ -169,7 +169,7 @@ export default function SearchPage() {
           <div ref={printRef}>
             {/* Print header */}
             <div className="hidden print:block mb-4">
-              <h2 className="text-xl font-bold">Victoria Council Explorer — AI Search</h2>
+              <h2 className="text-xl font-bold">Australia Council Explorer — AI Search</h2>
               <p className="text-sm text-gray-500">Query: &ldquo;{query}&rdquo;</p>
             </div>
 

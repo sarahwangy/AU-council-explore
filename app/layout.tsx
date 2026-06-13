@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Victoria Council Explorer',
-  description: 'Explore Victorian councils — library events, population stats, school zones, and community facilities',
+  title: 'Australia Council Explorer',
+  description: 'Explore Australian councils — library events, population stats, school zones, and community facilities',
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

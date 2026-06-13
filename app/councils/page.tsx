@@ -6,15 +6,32 @@ import { CouncilSearch } from './CouncilSearch'
 import { StateTabs } from '@/components/StateTabs'
 import { Suspense } from 'react'
 
-const VIC_REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer', 'regional'] as const
-const NSW_REGION_KEYS = ['all', 'sydney-inner', 'sydney-north', 'sydney-west', 'sydney-southwest', 'nsw-regional'] as const
+const STATE_NAMES: Record<string, string> = {
+  VIC: 'Victorian', NSW: 'New South Wales', QLD: 'Queensland',
+  SA: 'South Australian', WA: 'Western Australian', TAS: 'Tasmanian',
+  ACT: 'ACT', NT: 'Northern Territory',
+}
 
-const NSW_REGION_LABELS: Record<string, string> = {
-  'sydney-inner': 'Inner Sydney',
-  'sydney-north': 'North Sydney',
-  'sydney-west': 'Western Sydney',
-  'sydney-southwest': 'South-West Sydney',
-  'nsw-regional': 'NSW Regional',
+const VIC_REGION_KEYS = ['all', 'inner', 'eastern', 'southern', 'northern', 'western', 'outer', 'regional'] as const
+
+const STATE_REGION_KEYS: Record<string, string[]> = {
+  NSW: ['all', 'sydney-inner', 'sydney-north', 'sydney-west', 'sydney-southwest', 'nsw-regional'],
+  QLD: ['all', 'brisbane-north', 'brisbane-south', 'gold-coast', 'sunshine-coast', 'qld-regional'],
+  SA:  ['all', 'adelaide-metro', 'adelaide-hills', 'sa-regional'],
+  WA:  ['all', 'perth-metro', 'perth-south', 'wa-regional'],
+  TAS: ['all', 'hobart-metro', 'launceston', 'tas-regional'],
+  ACT: ['all'],
+  NT:  ['all', 'darwin-metro', 'alice-springs', 'nt-regional'],
+}
+
+const STATE_REGION_LABELS: Record<string, Record<string, string>> = {
+  NSW: { 'sydney-inner': 'Inner Sydney', 'sydney-north': 'North Sydney', 'sydney-west': 'Western Sydney', 'sydney-southwest': 'South-West Sydney', 'nsw-regional': 'NSW Regional' },
+  QLD: { 'brisbane-north': 'Brisbane North', 'brisbane-south': 'Brisbane South', 'gold-coast': 'Gold Coast', 'sunshine-coast': 'Sunshine Coast', 'qld-regional': 'QLD Regional' },
+  SA:  { 'adelaide-metro': 'Adelaide Metro', 'adelaide-hills': 'Adelaide Hills', 'sa-regional': 'SA Regional' },
+  WA:  { 'perth-metro': 'Perth Metro', 'perth-south': 'Perth South', 'wa-regional': 'WA Regional' },
+  TAS: { 'hobart-metro': 'Hobart Metro', 'launceston': 'Launceston', 'tas-regional': 'TAS Regional' },
+  ACT: {},
+  NT:  { 'darwin-metro': 'Darwin Metro', 'alice-springs': 'Alice Springs', 'nt-regional': 'NT Regional' },
 }
 
 interface Props {
@@ -50,15 +67,17 @@ export default async function CouncilsPage({ searchParams }: Props) {
     : councils
 
   const isVic = activeState === 'VIC'
-  const regionKeys = isVic ? VIC_REGION_KEYS : NSW_REGION_KEYS
+  const regionKeys = isVic ? [...VIC_REGION_KEYS] : (STATE_REGION_KEYS[activeState] ?? ['all'])
+  const regionLabels = STATE_REGION_LABELS[activeState] ?? {}
+  const stateName = STATE_NAMES[activeState] ?? activeState
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-(--color-primary) mb-6">{t('heading')}</h1>
+      <h1 className="text-2xl font-bold text-(--color-primary) mb-6">{stateName} Councils</h1>
 
       {/* State tabs */}
       <Suspense fallback={null}>
-        <StateTabs basePath="/councils" preserveParams={['region', 'q']} />
+        <StateTabs basePath="/councils" preserveParams={['q']} />
       </Suspense>
 
       {/* Region filter (per state) */}
@@ -75,7 +94,7 @@ export default async function CouncilsPage({ searchParams }: Props) {
           >
             {isVic
               ? t(`regions.${r}`)
-              : r === 'all' ? 'All' : (NSW_REGION_LABELS[r] ?? r)}
+              : r === 'all' ? 'All' : (regionLabels[r] ?? r)}
           </a>
         ))}
       </div>
