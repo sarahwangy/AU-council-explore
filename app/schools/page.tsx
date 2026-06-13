@@ -56,6 +56,12 @@ const STATE_PROXIMITY: Record<string, string> = {
 
 const STATES = ['VIC', 'NSW', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT']
 
+// States that have local zone GeoJSON data
+const STATES_WITH_ZONE_DATA = new Set(['VIC', 'NSW', 'QLD', 'SA'])
+
+// Re-export for use in JSX (client-side check)
+const STATE_ZONE_FILES = STATES_WITH_ZONE_DATA
+
 const POSTCODE_INFO: Record<string, { general: string; poBox?: string; example: string }> = {
   VIC: { general: '3000–3999', poBox: '8000–8999', example: 'e.g. 3000 (Melbourne), 3168 (Clayton), 3121 (Richmond)' },
   NSW: { general: '2000–2999', poBox: '1000–1999', example: 'e.g. 2000 (Sydney CBD), 2042 (Newtown), 2150 (Parramatta)' },
@@ -177,22 +183,11 @@ export default function SchoolsPage() {
 
       setSearch(s => ({ ...s, status: 'searching', address: resolvedAddress }))
 
-      if (activeState === 'VIC') {
-        const res = await fetch(`/api/schools/zone?lat=${lat}&lng=${lng}`)
-        if (!res.ok) throw new Error('School zone lookup failed')
-        const data = await res.json() as { schools: SchoolResult[]; suburb: string; zones: ZoneFeatureCollection }
-        setSearch({ status: 'done', address: resolvedAddress, results: data.schools, zones: data.zones, errorMsg: '', suburb: data.suburb, lat, lng })
-      } else {
-        // Non-VIC: no zone data, just show the resolved address + state resources
-        const token2 = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-        let suburb = ''
-        if (token2) {
-          const revRes = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token2}&types=neighborhood,locality&limit=1`)
-          const revData = await revRes.json() as { features?: { text: string }[] }
-          suburb = revData.features?.[0]?.text ?? ''
-        }
-        setSearch({ status: 'done', address: resolvedAddress, results: [], zones: { type: 'FeatureCollection', features: [] }, errorMsg: '', suburb, lat, lng })
-      }
+      // All states now go through the same API — it returns empty results for states without data
+      const res = await fetch(`/api/schools/zone?lat=${lat}&lng=${lng}&state=${activeState}`)
+      if (!res.ok) throw new Error('School zone lookup failed')
+      const data = await res.json() as { schools: SchoolResult[]; suburb: string; zones: ZoneFeatureCollection; hasZoneData: boolean }
+      setSearch({ status: 'done', address: resolvedAddress, results: data.schools, zones: data.zones, errorMsg: '', suburb: data.suburb, lat, lng })
     } catch (err) {
       setSearch(s => ({ ...s, status: 'error', errorMsg: err instanceof Error ? err.message : 'Search failed' }))
     }
@@ -290,9 +285,9 @@ export default function SchoolsPage() {
               )}
             </form>
             <p className="text-xs text-blue-400 mt-3">
-              {activeState === 'VIC'
-                ? 'Only Victorian government school zones are shown. Catholic and independent schools select their own students.'
-                : `Zone boundary data for ${STATE_FULL_NAMES[activeState]} is not yet available in this tool. Use the official resources below.`}
+              {STATE_ZONE_FILES.has(activeState)
+                ? 'Only government school zones are shown. Catholic and independent schools select their own students.'
+                : `Zone boundary data for ${STATE_FULL_NAMES[activeState]} is not yet available — use the official resources below.`}
             </p>
           </div>
 
@@ -335,7 +330,8 @@ export default function SchoolsPage() {
                 />
               )}
 
-              {activeState !== 'VIC' && nonVicResources && (
+              {/* No zone data for this state — show official link */}
+              {results.length === 0 && zones !== null && zones.features.length === 0 && nonVicResources && (
                 <div className="mt-6 bg-blue-50 border border-blue-200 rounded-2xl p-5">
                   <p className="font-semibold text-blue-800 mb-1">🏫 {STATE_FULL_NAMES[activeState]} school zone data not yet available</p>
                   <p className="text-sm text-blue-700 mb-4">
@@ -356,7 +352,7 @@ export default function SchoolsPage() {
                 </div>
               )}
 
-              {activeState === 'VIC' && results.length === 0 && (
+              {results.length === 0 && zones !== null && zones.features.length === 0 && !nonVicResources && (
                 <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 mt-4">
                   <div className="text-4xl mb-3">🔍</div>
                   <p className="text-gray-500 font-medium">No school zones found for this address</p>
@@ -364,7 +360,7 @@ export default function SchoolsPage() {
                 </div>
               )}
 
-              {activeState === 'VIC' && results.length > 0 && (
+              {results.length > 0 && (
                 <div className="space-y-8 mt-6">
                   {primarySchools.length > 0 && (
                     <section>
@@ -391,7 +387,8 @@ export default function SchoolsPage() {
                     </section>
                   )}
                   <p className="text-xs text-gray-400 text-center pt-2">
-                    Data source: Victorian Department of Education 2026 · School zones are approximate · Always verify with the school directly
+                    {activeState === 'VIC' ? 'Data source: Victorian Department of Education 2026' : `Data source: ${STATE_FULL_NAMES[activeState]} Department of Education 2024–2026`}
+                    {' '}· School zones are approximate · Always verify with the school directly
                   </p>
                 </div>
               )}

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
@@ -9,10 +9,9 @@ interface ZoneFeature {
   geometry: { type: string; coordinates: unknown }
   properties: {
     School_Name: string
-    Campus_Name?: string
     ENTITY_CODE: number
-    Year_Level: string
-    Boundary_Year: number
+    zoneType?: string
+    [key: string]: unknown
   }
 }
 
@@ -21,19 +20,34 @@ interface GeoJSON {
   features: ZoneFeature[]
 }
 
-// Load once at module level (cached across requests in the same worker)
-let primaryZones: GeoJSON | null = null
-let secondaryZones: GeoJSON | null = null
+// Per-state file names (all use same normalized schema: School_Name, ENTITY_CODE)
+const STATE_ZONE_FILES: Record<string, { primary: string; secondary: string } | null> = {
+  VIC: { primary: 'school-zones-primary.geojson', secondary: 'school-zones-secondary.geojson' },
+  NSW: { primary: 'nsw-school-zones-primary.geojson', secondary: 'nsw-school-zones-secondary.geojson' },
+  QLD: { primary: 'qld-school-zones-primary.geojson', secondary: 'qld-school-zones-secondary.geojson' },
+  SA:  { primary: 'sa-school-zones-primary.geojson', secondary: 'sa-school-zones-secondary.geojson' },
+  WA:  null,
+  TAS: null,
+  NT:  null,
+  ACT: null,
+}
 
-function loadZones() {
-  if (!primaryZones) {
-    const p = resolve(process.cwd(), 'data/school-zones-primary.geojson')
-    primaryZones = JSON.parse(readFileSync(p, 'utf-8')) as GeoJSON
+// Cache loaded zone data (lazy, per state)
+const zoneCache: Map<string, { primary: GeoJSON; secondary: GeoJSON }> = new Map()
+
+function loadStateZones(state: string): { primary: GeoJSON; secondary: GeoJSON } | null {
+  if (zoneCache.has(state)) return zoneCache.get(state)!
+  const files = STATE_ZONE_FILES[state]
+  if (!files) return null
+  const pPath = resolve(process.cwd(), 'data', files.primary)
+  const sPath = resolve(process.cwd(), 'data', files.secondary)
+  if (!existsSync(pPath) || !existsSync(sPath)) return null
+  const zones = {
+    primary: JSON.parse(readFileSync(pPath, 'utf-8')) as GeoJSON,
+    secondary: JSON.parse(readFileSync(sPath, 'utf-8')) as GeoJSON,
   }
-  if (!secondaryZones) {
-    const p = resolve(process.cwd(), 'data/school-zones-secondary.geojson')
-    secondaryZones = JSON.parse(readFileSync(p, 'utf-8')) as GeoJSON
-  }
+  zoneCache.set(state, zones)
+  return zones
 }
 
 function getBbox(feature: ZoneFeature): [number, number, number, number] {
@@ -51,8 +65,19 @@ function getBbox(feature: ZoneFeature): [number, number, number, number] {
   return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)]
 }
 
+function findFeatures(lat: number, lng: number, zones: GeoJSON): ZoneFeature[] {
+  const pt = point([lng, lat])
+  const results: ZoneFeature[] = []
+  for (const feature of zones.features) {
+    const [minLng, minLat, maxLng, maxLat] = getBbox(feature)
+    if (lng < minLng || lng > maxLng || lat < minLat || lat > maxLat) continue
+    if (booleanPointInPolygon(pt, feature as Parameters<typeof booleanPointInPolygon>[1])) {
+      results.push(feature)
+    }
+  }
+  return results
+}
 
-// Simple suburb lookup from Mapbox reverse geocode
 async function getSuburb(lat: number, lng: number): Promise<string> {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
   if (!token) return ''
@@ -69,34 +94,26 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat') ?? '')
   const lng = parseFloat(searchParams.get('lng') ?? '')
+  const state = (searchParams.get('state') ?? 'VIC').toUpperCase()
 
   if (isNaN(lat) || isNaN(lng)) {
     return NextResponse.json({ error: 'lat and lng required' }, { status: 400 })
   }
 
-  try {
-    loadZones()
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: `Zone data not loaded: ${msg}` }, { status: 500 })
+  const stateZones = loadStateZones(state)
+  if (!stateZones) {
+    // State has no zone data — return empty result (frontend shows official link)
+    const suburb = await getSuburb(lat, lng)
+    return NextResponse.json({
+      schools: [],
+      suburb,
+      zones: { type: 'FeatureCollection', features: [] },
+      hasZoneData: false,
+    })
   }
 
-  // Find matched features (with geometry) for the map
-  function findFeatures(lat: number, lng: number, zones: GeoJSON): ZoneFeature[] {
-    const pt = point([lng, lat])
-    const results: ZoneFeature[] = []
-    for (const feature of zones.features) {
-      const [minLng, minLat, maxLng, maxLat] = getBbox(feature)
-      if (lng < minLng || lng > maxLng || lat < minLat || lat > maxLat) continue
-      if (booleanPointInPolygon(pt, feature as Parameters<typeof booleanPointInPolygon>[1])) {
-        results.push(feature)
-      }
-    }
-    return results
-  }
-
-  const primaryFeatures = findFeatures(lat, lng, primaryZones!)
-  const secondaryFeatures = findFeatures(lat, lng, secondaryZones!)
+  const primaryFeatures = findFeatures(lat, lng, stateZones.primary)
+  const secondaryFeatures = findFeatures(lat, lng, stateZones.secondary)
 
   const schools = [
     ...primaryFeatures.map(f => ({
@@ -127,5 +144,5 @@ export async function GET(request: Request) {
 
   const suburb = await getSuburb(lat, lng)
 
-  return NextResponse.json({ schools, suburb, zones })
+  return NextResponse.json({ schools, suburb, zones, hasZoneData: true })
 }
