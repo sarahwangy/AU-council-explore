@@ -16,34 +16,6 @@ interface Library {
   council: { id: string; name: string }
 }
 
-interface NearbyLibrary {
-  id: string
-  name: string
-  councilId: string
-  address: string | null
-  suburb: string | null
-  url: string | null
-  lat: number
-  lng: number
-  hoursJson: string | null
-  distance: number
-}
-
-function getLibraryOpenStatus(hoursJson: string | null): { todayHours: string | null; isOpen: boolean } | null {
-  if (!hoursJson) return null
-  try {
-    const hours = JSON.parse(hoursJson) as Record<string, string | null>
-    const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Melbourne' }))
-    const dayKey = DAYS[now.getDay()]
-    const todayHours = hours[dayKey] ?? null
-    if (!todayHours) return { todayHours: null, isOpen: false }
-    const [open, close] = todayHours.split('-').map(t => t.trim())
-    const toMins = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + (m ?? 0) }
-    const nowMins = now.getHours() * 60 + now.getMinutes()
-    return { todayHours, isOpen: nowMins >= toMins(open) && nowMins < toMins(close) }
-  } catch { return null }
-}
 
 interface Event {
   id: string
@@ -86,10 +58,6 @@ export default function MyEventsPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [libraries, setLibraries] = useState<Library[]>([])
-  const [suburbQuery, setSuburbQuery] = useState('')
-  const [nearbyLibraries, setNearbyLibraries] = useState<NearbyLibrary[] | null>(null)
-  const [nearbyLoading, setNearbyLoading] = useState(false)
-  const [nearbyError, setNearbyError] = useState('')
   const LIMIT = 20
 
   const councilIds = favorites.councils
@@ -119,31 +87,6 @@ export default function MyEventsPage() {
       .then((data: ApiResponse) => { setEvents(data.events); setTotal(data.total) })
       .finally(() => setLoading(false))
   }, [councilIds.join(','), page])
-
-  async function searchNearby(e: React.FormEvent) {
-    e.preventDefault()
-    if (!suburbQuery.trim()) return
-    setNearbyLoading(true)
-    setNearbyError('')
-    setNearbyLibraries(null)
-    try {
-      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-      if (!token) { setNearbyError('Map token not configured'); return }
-      const query = encodeURIComponent(`${suburbQuery.trim()}, Victoria, Australia`)
-      const geoRes = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${token}&country=AU&proximity=145.0,-37.8&limit=1`)
-      const geoData = await geoRes.json() as { features?: { center: [number, number] }[] }
-      const feature = geoData.features?.[0]
-      if (!feature) { setNearbyError('Suburb not found — try another name'); return }
-      const [lng, lat] = feature.center
-      const nearbyRes = await fetch(`/api/libraries/nearby?lat=${lat}&lng=${lng}&limit=5`)
-      const data = await nearbyRes.json()
-      setNearbyLibraries(data)
-    } catch {
-      setNearbyError('Search failed — please try again')
-    } finally {
-      setNearbyLoading(false)
-    }
-  }
 
   if (!loading && councilIds.length === 0) {
     return (
@@ -286,74 +229,6 @@ export default function MyEventsPage() {
           )}
         </section>
 
-      {/* Nearby Library Search */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Find Nearby Libraries</h2>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <form onSubmit={searchNearby} className="flex gap-2">
-            <input
-              type="text"
-              value={suburbQuery}
-              onChange={e => setSuburbQuery(e.target.value)}
-              placeholder="Enter suburb name (e.g. Fitzroy, Clayton…)"
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30 focus:border-(--color-primary)"
-            />
-            <button
-              type="submit"
-              disabled={nearbyLoading || !suburbQuery.trim()}
-              className="px-4 py-2 bg-(--color-primary) text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {nearbyLoading ? '…' : 'Search'}
-            </button>
-          </form>
-
-          {nearbyError && (
-            <p className="mt-3 text-sm text-red-500">{nearbyError}</p>
-          )}
-
-          {nearbyLibraries && nearbyLibraries.length === 0 && (
-            <p className="mt-3 text-sm text-gray-400">No libraries found near this suburb.</p>
-          )}
-
-          {nearbyLibraries && nearbyLibraries.length > 0 && (
-            <div className="mt-4 space-y-3">
-              {nearbyLibraries.map((lib, i) => {
-                const status = getLibraryOpenStatus(lib.hoursJson)
-                return (
-                  <div key={lib.id} className="flex items-start gap-3">
-                    <div className="shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        {lib.url ? (
-                          <a href={lib.url} target="_blank" rel="noopener noreferrer" className="font-medium text-sm text-gray-800 hover:text-(--color-primary) transition-colors">
-                            {lib.name}
-                          </a>
-                        ) : (
-                          <span className="font-medium text-sm text-gray-800">{lib.name}</span>
-                        )}
-                        <span className="text-xs text-gray-400">{lib.distance < 1 ? `${Math.round(lib.distance * 1000)}m` : `${lib.distance.toFixed(1)}km`} away</span>
-                      </div>
-                      {lib.address && (
-                        <p className="text-xs text-gray-500">{lib.address}{lib.suburb ? `, ${lib.suburb}` : ''}</p>
-                      )}
-                      {status && (
-                        <p className="text-xs mt-0.5">
-                          <span className={status.isOpen ? 'text-green-600' : 'text-red-500'}>
-                            {status.isOpen ? '🟢 Open' : '🔴 Closed'}
-                          </span>
-                          {status.todayHours && <span className="text-gray-400"> · Today {status.todayHours}</span>}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* Subscribe */}
       <section className="mb-8">
