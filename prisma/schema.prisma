@@ -109,6 +109,72 @@ model ScrapeLog {
   runAt     DateTime @default(now())
 }
 
+model Childcare {
+  id            String   @id @default(cuid())
+  acecqaId      String?  @unique  // ACECQA service approval number
+  name          String
+  providerName  String?
+  serviceType   String?  // "Long Day Care" | "Family Day Care" | "Outside School Hours Care" | etc
+  address       String?
+  suburb        String?
+  postcode      String?
+  state         String   @default("VIC")
+  lat           Float?
+  lng           Float?
+  phone         String?
+  email         String?
+  website       String?
+  qualityRating String?  // "Exceeding NQS" | "Meeting NQS" | "Working Towards NQS" | "Significant Improvement Required"
+  operatingDays String?  // e.g. "Mon-Fri"
+  operatingHours String? // e.g. "7:00am-6:00pm"
+  vacancyStatus String?  // "Vacancies" | "No Vacancies" | "Contact service"
+  approved      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([state, suburb])
+  @@index([lat, lng])
+}
+
+model Playground {
+  id          String   @id @default(cuid())
+  osmId       String?  @unique  // OpenStreetMap node/way ID
+  name        String?
+  lat         Float
+  lng         Float
+  suburb      String?
+  state       String   @default("VIC")
+  fenced      Boolean?
+  shaded      Boolean?
+  hasBbq      Boolean?
+  hasToilet   Boolean?
+  hasSwings   Boolean?
+  surfaceType String?  // "rubber" | "sand" | "grass" | "wood chips"
+  createdAt   DateTime @default(now())
+
+  @@index([state])
+  @@index([lat, lng])
+}
+
+model Hospital {
+  id                 String   @id @default(cuid())
+  osmId              String?  @unique
+  name               String
+  hospitalType       String?  // "public" | "private" | "clinic"
+  address            String?
+  suburb             String?
+  state              String   @default("VIC")
+  lat                Float
+  lng                Float
+  phone              String?
+  website            String?
+  emergencyAvailable Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([state])
+  @@index([lat, lng])
+}
+
 model AiSearchCache {
   id        String   @id @default(cuid())
   queryKey  String   @unique  // normalized lowercase query

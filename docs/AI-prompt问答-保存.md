@@ -507,5 +507,78 @@ Vercel 部署 — import repo，设置同样的 env vars
 
 ---
 
-*最后更新：2026-06-12*
+## Q：Liveability Data Platform 规划
+
+**问：** 构建面向新移民/家庭用户的 Location Intelligence Platform，涵盖医院、托儿所、游乐场、公共交通四个维度。
+
+**答：** 各模块建议优先级：
+
+| 模块 | 数据来源 | 难度 | 价值 |
+|---|---|---|---|
+| 👶 Childcare | ACECQA CSV / OpenStreetMap | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 🛝 Playground | OpenStreetMap (Overpass API) | ⭐ | ⭐⭐⭐⭐ |
+| 🏥 Hospital | OpenStreetMap (amenity=hospital) | ⭐⭐ | ⭐⭐⭐⭐ |
+| 🚆 Transit | GTFS (PTV/TfNSW/Translink) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+**核心结论：** 数据都是公开的，差异化在于 Liveability Score 算法权重和面向新移民的解读角度。
+
+---
+
+## Q：OpenStreetMap (OSM) 是什么？收费吗？
+
+**问：** 替代方案先用 OSM，这是什么意思，需要收费吗？
+
+**答：** OpenStreetMap = 免费开源地图数据库（地图界的维基百科），完全免费，无需注册和 API key。通过 Overpass API 免费查询。
+
+```bash
+# 查询 VIC 所有医院（免费，无需 key）
+curl "https://overpass-api.de/api/interpreter" \
+  -d 'data=[out:json];area["name"="Victoria"]["admin_level"="4"]->.vic;node["amenity"="hospital"](area.vic);out body;'
+```
+
+ACECQA 官方 API 有 Cloudflare 保护无法直接爬取，所以先用 OSM 的 childcare/kindergarten 数据起步（VIC 有 1258 个节点），后期可手动从 ACECQA 官网下载 CSV 导入。
+
+---
+
+## Q：Liveability 功能实现（2026-06-13）
+
+**执行内容：**
+
+### 新增 Prisma 表
+- `Childcare` — 托儿所（acecqaId, name, serviceType, qualityRating, lat, lng 等）
+- `Playground` — 游乐场（osmId, name, lat, lng, fenced, shaded, hasBbq, hasToilet 等）
+- `Hospital` — 医院（osmId, name, hospitalType, emergencyAvailable, lat, lng 等）
+
+### 数据导入（`scripts/import-liveability.ts`）
+从 OSM 下载并导入：
+- 🏥 293 hospitals (VIC)
+- 🛝 6,054 playgrounds (VIC)
+- 👶 1,258 childcare centres (VIC)
+
+### 新增页面
+- `/childcare` — 左右布局（列表 + Mapbox 地图），suburb 搜索，按服务类型过滤，颜色编码评级
+- `/playgrounds` — 游乐场地图，filter: 围栏/遮阳/BBQ/厕所
+- `/hospitals` — 医院地图，红点=急诊，蓝点=普通，Emergency only filter
+- `/suburb/[name]` — Suburb 综合画像，Overall Liveability Score (0–100)，四维评分卡（Childcare/Playground/Hospital/Library），Transit 占位符，附近设施列表
+
+### API
+- `/api/liveability/nearby?lat=&lng=&type=childcare|playground|hospital&limit=` — 5km 范围内最近设施
+
+### Suburb 评分公式
+```
+Overall = Childcare×30% + Playground×20% + Hospital×30% + Library×20%
+Childcare score  = min(100, count × 8)
+Playground score = min(100, count × 5)
+Hospital score   = count > 0 ? min(100, 50 + count×10) : 0
+Library score    = min(100, count × 25)
+```
+
+Transit Score 为占位符，待 GTFS 数据集成后加入。
+
+### Nav 更新
+AppNav 新增 👶 Childcare / 🛝 Playgrounds / 🏥 Hospitals 三个链接。
+
+---
+
+*最后更新：2026-06-13*
 

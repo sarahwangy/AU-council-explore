@@ -38,6 +38,9 @@ export function AppNav({ locale }: { locale: string }) {
           {navLink('/libraries', t('libraries'))}
           {navLink('/schools', t('schools'))}
           {navLink('/states', t('states'))}
+          {navLink('/childcare', '👶 Childcare')}
+          {navLink('/playgrounds', '🛝 Playgrounds')}
+          {navLink('/hospitals', '🏥 Hospitals')}
           {navLink('/my-events', `★ ${t('myEvents')}`)  }
           <Link
             href="/search"
