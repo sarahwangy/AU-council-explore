@@ -122,6 +122,7 @@ interface Council {
   name: string
   region: string
   population?: number | null
+  website?: string | null
   _count?: { events: number }
 }
 
@@ -645,17 +646,23 @@ export default function HomePage() {
           if (!lgaSlug) return
           // lga_slug from GeoJSON (e.g. "gold-coast") may differ from DB id (e.g. "gold-coast-qld")
           const match = councilsRef.current.find(c => c.id === lgaSlug || c.id.startsWith(lgaSlug + '-'))
-          router.push(`/councils/${match?.id ?? lgaSlug}`)
+          if (match?.website) {
+            window.open(match.website, '_blank', 'noopener,noreferrer')
+          }
         })
 
         map.on('mousemove', 'lga-fill', (e) => {
-          map.getCanvas().style.cursor = 'pointer'
           const props = e.features?.[0]?.properties as Record<string, string> | undefined
-          const slug = props?.lga_slug
-          const council = councilsRef.current.find(c => c.id === slug)
-          // Fall back to raw LGA name from GeoJSON for regions not in DB
-          const fallbackName = props?.lga_name ?? props?.lga_slug ?? ''
-          setHoveredCouncil(council ?? (fallbackName ? { id: slug ?? '', name: fallbackName, region: '' } : null))
+          const lgaSlug = props?.lga_slug
+          const council = councilsRef.current.find(c => c.id === lgaSlug || c.id.startsWith((lgaSlug ?? '') + '-'))
+          // Only show tooltip for LGAs that exist in DB — skip remote/unregistered areas
+          if (!council) {
+            map.getCanvas().style.cursor = ''
+            setHoveredCouncil(null)
+            return
+          }
+          map.getCanvas().style.cursor = 'pointer'
+          setHoveredCouncil(council)
           setTooltipPos({ x: e.point.x, y: e.point.y })
         })
 
