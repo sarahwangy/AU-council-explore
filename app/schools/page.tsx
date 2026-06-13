@@ -56,6 +56,17 @@ const STATE_PROXIMITY: Record<string, string> = {
 
 const STATES = ['VIC', 'NSW', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT']
 
+const POSTCODE_INFO: Record<string, { general: string; poBox?: string; example: string }> = {
+  VIC: { general: '3000–3999', poBox: '8000–8999', example: 'e.g. 3000 (Melbourne), 3168 (Clayton), 3121 (Richmond)' },
+  NSW: { general: '2000–2999', poBox: '1000–1999', example: 'e.g. 2000 (Sydney CBD), 2042 (Newtown), 2150 (Parramatta)' },
+  QLD: { general: '4000–4999', poBox: '9000–9999', example: 'e.g. 4000 (Brisbane), 4217 (Gold Coast), 4870 (Cairns)' },
+  SA:  { general: '5000–5799', poBox: '5800–5999', example: 'e.g. 5000 (Adelaide), 5162 (Onkaparinga), 5031 (Hindmarsh)' },
+  WA:  { general: '6000–6797', poBox: '6800–6999', example: 'e.g. 6000 (Perth), 6150 (Fremantle), 6010 (Claremont)' },
+  TAS: { general: '7000–7999', example: 'e.g. 7000 (Hobart), 7250 (Launceston), 7310 (Devonport)' },
+  NT:  { general: '0800–0999', example: 'e.g. 0800 (Darwin), 0870 (Alice Springs), 0850 (Katherine)' },
+  ACT: { general: '2600–2618, 2900–2920', example: 'e.g. 2600 (Canberra), 2601 (City), 2906 (Tuggeranong)' },
+}
+
 const NON_VIC_RESOURCES: Record<string, { name: string; url: string; desc: string }[]> = {
   NSW: [
     { name: 'Find My Local School (NSW)', url: 'https://education.nsw.gov.au/schooling/going-to-a-government-school/find-your-local-school', desc: 'Official NSW Department of Education zone finder' },
@@ -284,6 +295,24 @@ export default function SchoolsPage() {
                 : `Zone boundary data for ${STATE_FULL_NAMES[activeState]} is not yet available in this tool. Use the official resources below.`}
             </p>
           </div>
+
+          {/* Postcode range hint */}
+          {(() => {
+            const pc = POSTCODE_INFO[activeState]
+            if (!pc) return null
+            return (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
+                <span className="text-lg shrink-0 mt-0.5">📮</span>
+                <div>
+                  <p className="text-xs font-semibold text-amber-800 mb-0.5">
+                    {STATE_FULL_NAMES[activeState]} postcodes: <span className="font-bold">{pc.general}</span>
+                    {pc.poBox && <span className="font-normal text-amber-600"> · PO Box / large volume: {pc.poBox}</span>}
+                  </p>
+                  <p className="text-xs text-amber-600">{pc.example}</p>
+                </div>
+              </div>
+            )
+          })()}
 
           {status === 'error' && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-600">{errorMsg}</div>

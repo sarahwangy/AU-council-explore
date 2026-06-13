@@ -136,18 +136,26 @@ export function SchoolZoneMap({ centerLng, centerLat, zones }: Props) {
     }
   }, [centerLng, centerLat, zones])
 
+  const hasZones = zones.features.length > 0
+  const hasPrimary = zones.features.some(f => (f.properties as { zoneType: string }).zoneType === 'primary')
+  const hasSecondary = zones.features.some(f => (f.properties as { zoneType: string }).zoneType === 'secondary')
+
   return (
     <div className="mt-5 rounded-2xl overflow-hidden border border-blue-100 shadow-sm">
       <div ref={mapContainer} className="w-full h-80 md:h-96" />
       <div className="bg-blue-50 px-4 py-2 flex items-center gap-4 text-xs text-blue-600 flex-wrap">
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-2 rounded bg-blue-400 opacity-70" /> Primary zone
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-2 rounded bg-emerald-400 opacity-70" /> Secondary zone
-        </span>
+        {hasPrimary && (
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-8 h-2 rounded bg-blue-400 opacity-70" /> Primary zone
+          </span>
+        )}
+        {hasSecondary && (
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-8 h-2 rounded bg-emerald-400 opacity-70" /> Secondary zone
+          </span>
+        )}
         <span className="flex items-center gap-1">📍 Your address</span>
-        <span className="text-blue-400">· Click zone to see school name</span>
+        {hasZones && <span className="text-blue-400">· Click zone to see school name</span>}
       </div>
     </div>
   )
