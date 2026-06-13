@@ -641,8 +641,11 @@ export default function HomePage() {
         })
 
         map.on('click', 'lga-fill', (e) => {
-          const slug = e.features?.[0]?.properties?.lga_slug as string | undefined
-          if (slug) router.push(`/councils/${slug}`)
+          const lgaSlug = e.features?.[0]?.properties?.lga_slug as string | undefined
+          if (!lgaSlug) return
+          // lga_slug from GeoJSON (e.g. "gold-coast") may differ from DB id (e.g. "gold-coast-qld")
+          const match = councilsRef.current.find(c => c.id === lgaSlug || c.id.startsWith(lgaSlug + '-'))
+          router.push(`/councils/${match?.id ?? lgaSlug}`)
         })
 
         map.on('mousemove', 'lga-fill', (e) => {

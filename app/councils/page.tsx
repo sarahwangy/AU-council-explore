@@ -45,6 +45,7 @@ export default async function CouncilsPage({ searchParams }: Props) {
 
   const region = regionParam && regionParam !== 'all' ? regionParam : undefined
 
+  // Fetch filtered councils (displayed cards)
   const councils = await prisma.council.findMany({
     where: {
       state: activeState,
@@ -62,6 +63,14 @@ export default async function CouncilsPage({ searchParams }: Props) {
     orderBy: { name: 'asc' },
   })
 
+  // Fetch all-state counts for stats summary (unfiltered)
+  const allCouncils = await prisma.council.findMany({
+    where: { state: activeState },
+    include: { _count: { select: { libraries: true } } },
+  })
+  const totalCouncils = allCouncils.length
+  const totalLibraries = allCouncils.reduce((s, c) => s + c._count.libraries, 0)
+
   const filtered = q
     ? councils.filter(c => c.name.toLowerCase().includes(q.toLowerCase()))
     : councils
@@ -71,14 +80,54 @@ export default async function CouncilsPage({ searchParams }: Props) {
   const regionLabels = STATE_REGION_LABELS[activeState] ?? {}
   const stateName = STATE_NAMES[activeState] ?? activeState
 
+  // Per-region counts for non-all views
+  const regionCounts: Record<string, { councils: number; libraries: number }> = {}
+  for (const c of allCouncils) {
+    if (!regionCounts[c.region]) regionCounts[c.region] = { councils: 0, libraries: 0 }
+    regionCounts[c.region].councils++
+    regionCounts[c.region].libraries += c._count.libraries
+  }
+
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-(--color-primary) mb-6">{stateName} Councils</h1>
+      <h1 className="text-2xl font-bold text-(--color-primary) mb-1">{stateName} Councils</h1>
+      <p className="text-sm text-gray-500 mb-5">
+        {totalCouncils} councils{totalLibraries > 0 ? ` · ${totalLibraries} libraries` : ''}
+      </p>
 
       {/* State tabs */}
       <Suspense fallback={null}>
         <StateTabs basePath="/councils" preserveParams={['q']} />
       </Suspense>
+
+      {/* Region stats summary */}
+      {regionKeys.length > 1 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-5">
+          {regionKeys.filter(r => r !== 'all').map(r => {
+            const label = isVic ? t(`regions.${r}`) : (regionLabels[r] ?? r)
+            const counts = regionCounts[r]
+            if (!counts) return null
+            return (
+              <a
+                key={r}
+                href={`/councils?state=${activeState}&region=${r}`}
+                className={`rounded-xl border px-4 py-3 hover:border-(--color-primary)/40 transition-colors ${
+                  (regionParam ?? '') === r
+                    ? 'bg-(--color-primary)/5 border-(--color-primary)/40'
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                <p className="text-xs text-gray-400 truncate">{label}</p>
+                <p className="text-lg font-bold text-(--color-primary) mt-0.5">{counts.councils}</p>
+                <p className="text-xs text-gray-400">
+                  {counts.councils === 1 ? 'council' : 'councils'}
+                  {counts.libraries > 0 ? ` · ${counts.libraries} lib${counts.libraries === 1 ? '' : 's'}` : ''}
+                </p>
+              </a>
+            )
+          })}
+        </div>
+      )}
 
       {/* Region filter (per state) */}
       <div className="flex flex-wrap gap-2 mb-6">
