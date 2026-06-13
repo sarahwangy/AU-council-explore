@@ -507,6 +507,51 @@ Vercel 部署 — import repo，设置同样的 env vars
 
 ---
 
+## Q21：为什么 national-expansion 分支的 Events 数据丢失了？
+
+**问：** 之前的 victoria-expansion 和 main 上面的 events 都是好的，为什么新的 national-expansion branch 却丢失了 events 数据，是之前的没有存到 database 里面吗？
+
+**答：** 数据没有丢失，也和分支无关。
+
+**根本原因：活动日期已过期，不是数据消失。**
+
+三个分支共用同一个 Neon PostgreSQL 数据库，看到的数据完全一样。Events 页面默认只显示 `startAt >= 现在时间` 的未来活动。
+
+数据库里 396 条数据的时间分布：
+- 最早：`2026-06-02`（已过期）
+- 大部分活动日期都在 2026-06-13 之前
+- 当前时间之后只剩 5 条活动
+
+所以页面看起来"空的"，其实是活动过期了，不是数据没了。
+
+**解决方法：** 重新运行 `npx tsx scripts/run-scraper.ts` 爬取新的未来活动。目前部分爬虫有问题：Cloudflare 拦截（monash/bayside/stonnington/hume）、Humanitix API 400 错误、Eventbrite `page_size` 参数报错。
+
+---
+
+## Q22：Liveability Data Platform 完整规划
+
+**问：** 构建面向新移民/家庭用户的 Location Intelligence Platform，涵盖医院、托儿所、游乐场、公共交通四个维度，分析并给建议。
+
+**答：**
+
+**各模块真实难度重评：**
+
+| 模块 | 数据来源 | 难度 | 价值 |
+|---|---|---|---|
+| 👶 Childcare | ACECQA CSV / OSM | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| 🛝 Playground | OpenStreetMap (Overpass API) | ⭐ | ⭐⭐⭐⭐ |
+| 🏥 Hospital | OSM (amenity=hospital) | ⭐⭐ | ⭐⭐⭐⭐ |
+| 🚆 Transit | GTFS (PTV/TfNSW/Translink) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+**分三期建议：**
+- 第一期：Childcare（OSM/ACECQA），1-2天出 MVP
+- 第二期：Hospital + Playground，合并到 Suburb Liveability Score
+- 第三期：Transit Score（GTFS，只做 VIC 先）
+
+**核心判断：** 数据都是公开的，差异化在于 Liveability Score 算法权重和面向新移民的解读角度。
+
+---
+
 ## Q：Liveability Data Platform 规划
 
 **问：** 构建面向新移民/家庭用户的 Location Intelligence Platform，涵盖医院、托儿所、游乐场、公共交通四个维度。
@@ -577,6 +622,98 @@ Transit Score 为占位符，待 GTFS 数据集成后加入。
 
 ### Nav 更新
 AppNav 新增 👶 Childcare / 🛝 Playgrounds / 🏥 Hospitals 三个链接。
+
+---
+
+## Q23：OSM Hospital 怎么用？需要收费吗？
+
+**问：** 替代方案先用 OSM (amenity=hospital) 是什么意思，需要收费吗？
+
+**答：** OpenStreetMap（OSM）= 免费开源地图数据库，类似"地图界的维基百科"，全球志愿者维护。完全免费，不需要 API key，不需要注册。
+
+通过 Overpass API 查询（免费）：
+```bash
+curl "https://overpass-api.de/api/interpreter" \
+  -d 'data=[out:json];area["name"="Victoria"]["admin_level"="4"]->.vic;(node["amenity"="hospital"](area.vic);way["amenity"="hospital"](area.vic););out center body;'
+```
+
+VIC 查询结果：301 个 hospital 元素，导入数据库后得 293 条有效记录。
+
+NHSD（National Health Services Directory）是官方数据源，数据更权威（含急诊科、床位数等），但需要申请 key 且审批较慢，所以先用 OSM 起步，后期替换。
+
+---
+
+## Q24：各页面 UI 设计方案确认
+
+**问：** 确认下每个页面怎么做，单独还是融合在其他页面里，UI 分别是啥样的？
+
+**答：** 每个功能单独页面，风格与现有 `/libraries`、`/schools` 保持一致：
+
+| 页面 | 布局 | 特点 |
+|---|---|---|
+| `/childcare` | 左列表 + 右 Mapbox 地图 | suburb 搜索，类型 filter（Long Day Care/Kindergarten），评级颜色标注（绿=Exceeding/蓝=Meeting/橙=Working Towards）|
+| `/playgrounds` | 地图为主 + 左侧列表 | 🛝 emoji 图钉，filter：围栏/遮阳/BBQ/厕所 |
+| `/hospitals` | 左列表 + 右地图 | 红点=急诊/蓝点=普通，Emergency only 切换，⚠️ 紧急提示（请拨 000）|
+| `/suburb/[name]` | 综合评分卡 + 附近设施列表 | Overall Score（0-100），四维进度条，Transit 占位符，可点击跳转各功能页 |
+
+Nav 新增三个链接：👶 Childcare / 🛝 Playgrounds / 🏥 Hospitals
+
+---
+
+## Q25：Suburb 综合画像需要加入 Library 打分
+
+**问：** `/suburb/[name]` 综合画像还需要加上 library，综合打分。
+
+**答：** 已加入 Library 维度，最终评分公式：
+
+```
+总分 = Childcare×30% + Hospital×30% + Library×20% + Playground×20%
+
+各维度分数（0-100）：
+Childcare score  = min(100, 3km内数量 × 8)
+Playground score = min(100, 3km内数量 × 5)
+Hospital score   = 有医院 ? min(100, 50 + 数量×10) : 0
+Library score    = min(100, 3km内数量 × 25)
+```
+
+Transit Score 为占位符（待 GTFS 数据集成后加入，权重建议 20%，其余四项等比降低）。
+
+页面会展示：总分条形图 + 四个评分卡（可点击跳转对应功能页）+ 各类最近3个设施列表。
+
+---
+
+## Q26：数据导入结果 & 命令说明
+
+**问：** 设计好 Prisma 之后，需要 run 什么 command 吗，还是你自己 run？
+
+**答：** Schema 改好后只需运行一条命令（我告诉你，你来跑）：
+
+```bash
+npx prisma migrate dev --name add-childcare-playground-hospital
+```
+
+这条命令自动把 schema 变化同步到 Neon 数据库。数据导入脚本我来写，你运行即可。
+
+**本次实际运行结果：**
+
+| 步骤 | 命令 | 结果 |
+|---|---|---|
+| Schema 迁移 | `npx prisma migrate dev` | ✅ 成功，3 张新表 |
+| 数据导入 | `npx tsx scripts/import-liveability.ts` | ✅ 293 hospitals + 6,054 playgrounds + 1,258 childcares |
+
+---
+
+## Q27：Timeline 中文版 + 时间表格式
+
+**问：** `@docs/timeline.md` 需要给我一份中文的版本保存起来，另外 time table 格式。
+
+**答：** 已创建 `docs/timeline-zh.md`，包含：
+
+1. **总览时间表**（6行汇总表格）— 每个日期/分支/阶段/主要内容一览
+2. **每天详细记录**（全部用表格格式）— 按上午/下午/晚上拆分
+3. **NSW/QLD/SA 学区数据对比表**
+4. **三分支横向对比大表**（9个维度）
+5. **全程解决的问题归档**
 
 ---
 
