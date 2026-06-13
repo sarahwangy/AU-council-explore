@@ -444,13 +444,15 @@ export default async function CouncilDetailPage({ params, searchParams }: Props)
                           {lib.phone}
                         </p>
                       )}
-                      {openStatus && (
+                      {openStatus ? (
                         <p className={`text-xs font-medium mt-2 flex items-center gap-1 ${openStatus.isOpen ? 'text-green-600' : 'text-gray-400'}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${openStatus.isOpen ? 'bg-green-500' : 'bg-gray-300'}`} />
                           {openStatus.todayHours
                             ? `Today ${openStatus.todayHours} · ${openStatus.isOpen ? 'Open now' : 'Closed'}`
                             : 'Closed today'}
                         </p>
+                      ) : (
+                        <p className="text-xs text-gray-400 mt-2">Hours unknown</p>
                       )}
                       {lib.url && (
                         <p className="text-xs font-medium text-(--color-primary) mt-3">View details →</p>
