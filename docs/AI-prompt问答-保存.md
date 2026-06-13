@@ -717,5 +717,64 @@ npx prisma migrate dev --name add-childcare-playground-hospital
 
 ---
 
+## Q28：Playground、Hospital、Public Transport 哪些能做，哪些不能做？
+
+**问：** playground、hospital、public transport，帮我分析哪些能做，哪些不能做，为什么。
+
+**答：**
+
+### 🛝 Playground — ✅ 完全可行（已完成）
+
+| 项目 | 状态 |
+|---|---|
+| 数据来源 | OSM Overpass API，完全免费，无需注册 |
+| 数据量 | VIC 6,054 个，一次性下载完毕 |
+| 已实现 | `/playgrounds` 页面上线，地图+列表，围栏/遮阳/BBQ/厕所 filter |
+| 唯一限制 | OSM 的设施属性（fenced/shaded/BBQ）覆盖率低，大多数只有坐标 |
+
+---
+
+### 🏥 Hospital — ✅ 完全可行（已完成）
+
+| 项目 | 状态 |
+|---|---|
+| 数据来源 | OSM `amenity=hospital`，完全免费 |
+| 数据量 | VIC 293 家，已导入 |
+| 已实现 | `/hospitals` 页面上线，红点=急诊/蓝点=普通 |
+| 限制1 | OSM 急诊标注覆盖率低，很多医院急诊字段缺失 |
+| 限制2 | 想要准确急诊/科室数据需 NHSD 官方 key（申请流程约1周）|
+
+---
+
+### 🚆 Public Transport — ⚠️ 部分可行，完整版复杂度最高
+
+**能做（难度 ⭐⭐⭐）：**
+- Stop 密度地图 — 只需 GTFS `stops.txt`（约 5MB），免费下载
+- "最近车站"卡片 — 逻辑与 hospital/childcare 完全一样
+- Stop 类型标注（train / tram / bus）
+
+**难做（难度 ⭐⭐⭐⭐⭐）：**
+- Transit Score（班次频率）— 需解析 `stop_times.txt`，VIC 文件解压后 500MB+
+- 实时到站信息 — GTFS-RT，需 PTV API key，30 秒更新，不适合静态数据库
+
+**数据来源：** `data.vic.gov.au` PTV GTFS zip（免费，无需注册）
+
+**建议方案：**
+- 第一步（1天）：只做 Stop 密度 + 最近车站，不算频率
+- 第二步（后期）：解析 `stop_times.txt` 计算每小时班次，完成 Transit Score
+
+---
+
+**三者综合对比：**
+
+| 功能 | 可行性 | 完成时间 | 数据质量 |
+|---|---|---|---|
+| 🛝 Playground | ✅ 已完成 | — | 位置准确，设施属性覆盖率低 |
+| 🏥 Hospital | ✅ 已完成 | — | 位置准确，急诊标注不完整 |
+| 🚆 Transit（Stop 密度）| ✅ 可做 | ~1天 | 准确（GTFS 官方数据）|
+| 🚆 Transit Score（频率）| ⚠️ 复杂 | 1-2周 | 需处理 500MB 数据 |
+
+---
+
 *最后更新：2026-06-13*
 
