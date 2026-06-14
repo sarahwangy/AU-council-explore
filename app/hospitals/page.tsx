@@ -10,7 +10,7 @@ export default async function HospitalsPage() {
   ])
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <main className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">🏥 Hospital Finder</h1>
         <p className="text-gray-500 text-sm">

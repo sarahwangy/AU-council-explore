@@ -81,7 +81,7 @@ export function HospitalClient() {
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {suggestions.map((s, i) => (
-              <button key={i} onClick={() => search(s.center[1], s.center[0], s.place_name)}
+              <button type="button" key={i} onClick={() => search(s.center[1], s.center[0], s.place_name)}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 transition-colors border-b border-gray-50 last:border-0">
                 📍 {s.place_name}
               </button>
@@ -92,7 +92,7 @@ export function HospitalClient() {
 
       {results && (
         <div className="mb-4 flex gap-2 items-center">
-          <button onClick={() => setEmergencyOnly(v => !v)}
+          <button type="button" onClick={() => setEmergencyOnly(v => !v)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               emergencyOnly ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}>
@@ -107,7 +107,7 @@ export function HospitalClient() {
       {!loading && filtered !== null && (
         <div className={selectedLat ? 'flex gap-4 flex-col lg:flex-row' : ''}>
           {selectedLat && selectedLng && (
-            <div className="lg:w-1/2 shrink-0 rounded-2xl overflow-hidden border border-red-100 shadow-sm h-80 lg:h-[560px]">
+            <div className="lg:w-3/5 shrink-0 rounded-2xl overflow-hidden border border-red-100 shadow-sm h-105 lg:h-155">
               <HospitalMapView centerLat={selectedLat} centerLng={selectedLng}
                 items={filtered.map(h => ({ id: h.id, name: h.name, lat: h.lat, lng: h.lng, emergency: h.emergencyAvailable }))}
               />

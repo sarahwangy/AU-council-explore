@@ -90,13 +90,20 @@ export function PlaygroundClient() {
             value={query}
             onChange={e => { setQuery(e.target.value); fetchSuggestions(e.target.value) }}
             placeholder="Enter suburb or postcode (e.g. Richmond, 3121)"
-            className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-400 shadow-sm"
+            className="w-full pl-9 pr-10 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-400 shadow-sm"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setSuggestions([]); setResults(null); setSelectedLat(null); setSelectedLng(null) }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+            >×</button>
+          )}
         </div>
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {suggestions.map((s, i) => (
-              <button key={i} onClick={() => search(s.center[1], s.center[0], s.place_name)}
+              <button type="button" key={i} onClick={() => search(s.center[1], s.center[0], s.place_name)}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 transition-colors border-b border-gray-50 last:border-0">
                 📍 {s.place_name}
               </button>
@@ -109,8 +116,8 @@ export function PlaygroundClient() {
       {results && (
         <div className="mb-4 flex gap-2 flex-wrap items-center">
           <span className="text-xs text-gray-500 font-medium">Filter:</span>
-          {([['fenced', '🔒 Fenced'], ['shaded', '☀️ Shaded'], ['bbq', '🔥 BBQ'], ['toilet', '🚻 Toilet']] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setFilters(f => ({ ...f, [key]: !f[key] }))}
+          {([['fenced', 'Fenced'], ['shaded', 'Shaded'], ['bbq', 'BBQ'], ['toilet', 'Toilet']] as const).map(([key, label]) => (
+            <button type="button" key={key} onClick={() => setFilters(f => ({ ...f, [key]: !f[key] }))}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 filters[key] ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}>
@@ -128,16 +135,16 @@ export function PlaygroundClient() {
       )}
 
       {!loading && filtered !== null && (
-        <div className={selectedLat ? 'flex gap-4 flex-col lg:flex-row' : ''}>
+        <div className={selectedLat ? 'flex gap-5 flex-col lg:flex-row' : ''}>
           {selectedLat && selectedLng && (
-            <div className="lg:w-1/2 shrink-0 rounded-2xl overflow-hidden border border-green-100 shadow-sm h-80 lg:h-[560px]">
+            <div className="lg:w-3/5 shrink-0 rounded-2xl overflow-hidden border border-green-100 shadow-sm h-105 lg:h-155">
               <PlaygroundMapView
                 centerLat={selectedLat} centerLng={selectedLng}
                 items={filtered.map(p => ({ id: p.id, name: p.name ?? 'Playground', lat: p.lat, lng: p.lng }))}
               />
             </div>
           )}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {filtered.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
                 <div className="text-4xl mb-3">🛝</div>

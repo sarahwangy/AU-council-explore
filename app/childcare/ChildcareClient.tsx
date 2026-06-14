@@ -164,8 +164,8 @@ export function ChildcareClient() {
         <div className={showMap && selectedLat ? 'flex gap-4 flex-col lg:flex-row' : ''}>
           {/* Map */}
           {showMap && selectedLat && selectedLng && (
-            <div className="lg:w-1/2 shrink-0">
-              <div className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm h-96 lg:h-150">
+            <div className="lg:w-3/5 shrink-0">
+              <div className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm h-105 lg:h-155">
                 <MapView
                   centerLat={selectedLat}
                   centerLng={selectedLng}

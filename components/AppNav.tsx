@@ -38,9 +38,9 @@ export function AppNav({ locale }: { locale: string }) {
           {navLink('/libraries', t('libraries'))}
           {navLink('/schools', t('schools'))}
           {navLink('/states', t('states'))}
-          {navLink('/childcare', '👶 Childcare')}
-          {navLink('/playgrounds', '🛝 Playgrounds')}
-          {navLink('/hospitals', '🏥 Hospitals')}
+          {navLink('/childcare', 'Childcare')}
+          {navLink('/playgrounds', 'Playgrounds')}
+          {navLink('/hospitals', 'Hospitals')}
           {navLink('/my-events', `★ ${t('myEvents')}`)  }
           <Link
             href="/search"
@@ -50,7 +50,7 @@ export function AppNav({ locale }: { locale: string }) {
                 : 'bg-white/10 hover:bg-white/20 text-white/90'
             }`}
           >
-            ✨ AI
+            AI
           </Link>
           <LocaleSwitcher current={locale} />
         </div>
