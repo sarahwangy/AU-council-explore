@@ -15,14 +15,14 @@ export default async function ChildcarePage() {
         </p>
       </div>
 
-      <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-        <strong>Data source:</strong> OpenStreetMap community data. For official quality ratings and vacancy status,
-        visit{' '}
+      <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-800">
+        <strong>✅ Data source:</strong> Official{' '}
         <a href="https://www.acecqa.gov.au/resources/national-registers" target="_blank" rel="noopener noreferrer"
           className="underline font-medium">
           ACECQA National Register
         </a>{' '}
-        or{' '}
+        — Australian Government quality ratings, approved places, and operating hours.
+        For vacancy status and fees, visit{' '}
         <a href="https://www.startingblocks.gov.au" target="_blank" rel="noopener noreferrer"
           className="underline font-medium">
           Starting Blocks

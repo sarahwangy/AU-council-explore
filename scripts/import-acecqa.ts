@@ -64,8 +64,8 @@ function parseHours(row: Row): string | null {
     ['Sat', 'Annual Saturday Start Time', 'Annual Saturday End Time'],
   ] as const
   for (const [label, startKey, endKey] of dayMap) {
-    const start = (row as Record<string, string>)[startKey]?.trim()
-    const end = (row as Record<string, string>)[endKey]?.trim()
+    const start = (row as unknown as Record<string, string>)[startKey]?.trim()
+    const end = (row as unknown as Record<string, string>)[endKey]?.trim()
     if (start && end) days.push(`${label} ${start}–${end}`)
   }
   return days.length > 0 ? days.join(', ') : null

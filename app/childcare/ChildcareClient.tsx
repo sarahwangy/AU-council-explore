@@ -88,13 +88,31 @@ export function ChildcareClient() {
             value={query}
             onChange={e => { setQuery(e.target.value); fetchSuggestions(e.target.value) }}
             placeholder="Enter suburb or postcode (e.g. Clayton, 3168)"
-            className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 shadow-sm"
+            className="w-full pl-9 pr-10 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 shadow-sm"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setSuggestions([])
+                setResults(null)
+                setSelectedLat(null)
+                setSelectedLng(null)
+                setError('')
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+              title="Clear search"
+            >
+              ×
+            </button>
+          )}
         </div>
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {suggestions.map((s, i) => (
               <button
+                type="button"
                 key={i}
                 onClick={() => search(s.center[1], s.center[0], s.place_name)}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0"
@@ -112,6 +130,7 @@ export function ChildcareClient() {
           <span className="text-xs text-gray-500 font-medium">Type:</span>
           {SERVICE_TYPES.map(t => (
             <button
+              type="button"
               key={t}
               onClick={() => setTypeFilter(t)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -122,6 +141,7 @@ export function ChildcareClient() {
             </button>
           ))}
           <button
+            type="button"
             onClick={() => setShowMap(v => !v)}
             className="ml-auto px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
           >
@@ -145,7 +165,7 @@ export function ChildcareClient() {
           {/* Map */}
           {showMap && selectedLat && selectedLng && (
             <div className="lg:w-1/2 shrink-0">
-              <div className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm h-96 lg:h-[600px]">
+              <div className="rounded-2xl overflow-hidden border border-purple-100 shadow-sm h-96 lg:h-150">
                 <MapView
                   centerLat={selectedLat}
                   centerLng={selectedLng}
