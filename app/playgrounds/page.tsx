@@ -14,6 +14,12 @@ export default async function PlaygroundsPage() {
           Find playgrounds near you — {total.toLocaleString()} VIC playgrounds in our database
         </p>
       </div>
+
+      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+        <strong>ℹ️ Data source:</strong> OpenStreetMap community data —
+        playground locations, fencing, shade, BBQ and toilet facilities crowdsourced and maintained by local contributors.
+      </div>
+
       <PlaygroundClient />
     </main>
   )

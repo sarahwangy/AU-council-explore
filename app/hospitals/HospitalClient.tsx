@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 
 const HospitalMapView = dynamic(() => import('./HospitalMapView'), { ssr: false })
@@ -27,6 +27,7 @@ export function HospitalClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [emergencyOnly, setEmergencyOnly] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchSuggestions = useCallback((val: string) => {
@@ -61,9 +62,17 @@ export function HospitalClient() {
     }
   }
 
-  const filtered = results
-    ? emergencyOnly ? results.filter(h => h.emergencyAvailable) : results
-    : null
+  const filtered = useMemo(
+    () => results
+      ? emergencyOnly ? results.filter(h => h.emergencyAvailable) : results
+      : null,
+    [results, emergencyOnly]
+  )
+
+  const mapItems = useMemo(
+    () => filtered?.map(h => ({ id: h.id, name: h.name, lat: h.lat, lng: h.lng, emergency: h.emergencyAvailable })) ?? [],
+    [filtered]
+  )
 
   return (
     <div>
@@ -75,8 +84,25 @@ export function HospitalClient() {
             value={query}
             onChange={e => { setQuery(e.target.value); fetchSuggestions(e.target.value) }}
             placeholder="Enter suburb, postcode or address"
-            className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 shadow-sm"
+            className="w-full pl-9 pr-10 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 shadow-sm"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setSuggestions([])
+                setResults(null)
+                setSelectedLat(null)
+                setSelectedLng(null)
+                setError('')
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+              title="Clear search"
+            >
+              ×
+            </button>
+          )}
         </div>
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
@@ -109,7 +135,8 @@ export function HospitalClient() {
           {selectedLat && selectedLng && (
             <div className="lg:w-3/5 shrink-0 rounded-2xl overflow-hidden border border-red-100 shadow-sm h-105 lg:h-155">
               <HospitalMapView centerLat={selectedLat} centerLng={selectedLng}
-                items={filtered.map(h => ({ id: h.id, name: h.name, lat: h.lat, lng: h.lng, emergency: h.emergencyAvailable }))}
+                selectedId={selectedId}
+                items={mapItems}
               />
             </div>
           )}
@@ -123,7 +150,7 @@ export function HospitalClient() {
               <div className="space-y-3">
                 <p className="text-sm text-gray-500 mb-2">{filtered.length} hospital{filtered.length !== 1 ? 's' : ''} within 5km</p>
                 {filtered.map((h, i) => (
-                  <div key={h.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:border-red-200 hover:shadow-md transition-all p-4">
+                  <div key={h.id} onClick={() => setSelectedId(h.id)} className={`bg-white rounded-xl border shadow-sm hover:border-red-200 hover:shadow-md transition-all p-4 cursor-pointer ${selectedId === h.id ? 'border-red-400 ring-1 ring-red-300' : 'border-gray-100'}`}>
                     <div className="flex gap-3 items-start">
                       <div className="shrink-0 w-7 h-7 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center">{i + 1}</div>
                       <div className="flex-1 min-w-0">

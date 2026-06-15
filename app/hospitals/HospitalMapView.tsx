@@ -4,12 +4,14 @@ import { useEffect, useRef } from 'react'
 interface Props {
   centerLat: number
   centerLng: number
+  selectedId?: string | null
   items: { id: string; name: string; lat: number; lng: number; emergency: boolean }[]
 }
 
-export default function HospitalMapView({ centerLat, centerLng, items }: Props) {
+export default function HospitalMapView({ centerLat, centerLng, selectedId, items }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<unknown>(null)
+  const popupsRef = useRef<Map<string, { popup: unknown; lat: number; lng: number }>>(new Map())
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -36,12 +38,15 @@ export default function HospitalMapView({ centerLat, centerLng, items }: Props) 
       for (const item of items) {
         const dot = document.createElement('div')
         dot.style.cssText = `width:14px;height:14px;border-radius:50%;background:${item.emergency ? '#dc2626' : '#2563eb'};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer`
-        const popup = new mapboxgl.Popup({ offset: 10, closeButton: false, maxWidth: '200px' })
-          .setHTML(`<div style="font-family:sans-serif">
+        const popup = new mapboxgl.Popup({ offset: 14, closeButton: false, maxWidth: '200px' })
+          .setHTML(`<div style="font-family:sans-serif;padding:2px 0">
             <div style="font-weight:700;font-size:13px;color:#1f2937">${item.name}</div>
             ${item.emergency ? '<div style="font-size:11px;color:#dc2626;font-weight:600;margin-top:2px">🚨 Emergency</div>' : ''}
           </div>`)
-        new mapboxgl.Marker({ element: dot }).setLngLat([item.lng, item.lat]).setPopup(popup).addTo(map)
+        new mapboxgl.Marker({ element: dot }).setLngLat([item.lng, item.lat]).addTo(map)
+        popupsRef.current.set(item.id, { popup, lat: item.lat, lng: item.lng })
+        dot.addEventListener('mouseenter', () => popup.setLngLat([item.lng, item.lat]).addTo(map))
+        dot.addEventListener('mouseleave', () => popup.remove())
       }
     })
 
@@ -49,6 +54,17 @@ export default function HospitalMapView({ centerLat, centerLng, items }: Props) 
       if (mapRef.current) { (mapRef.current as { remove: () => void }).remove(); mapRef.current = null }
     }
   }, [centerLat, centerLng, items])
+
+  useEffect(() => {
+    if (!selectedId || !mapRef.current) return
+    const entry = popupsRef.current.get(selectedId)
+    if (!entry) return
+    const map = mapRef.current as { flyTo: (opts: unknown) => void }
+    const { popup, lat, lng } = entry as { popup: { setLngLat: (c: [number, number]) => unknown; addTo: (m: unknown) => void; remove: () => void }; lat: number; lng: number }
+    popupsRef.current.forEach(e => (e as typeof entry & { popup: { remove: () => void } }).popup.remove())
+    map.flyTo({ center: [lng, lat], zoom: 15, speed: 1.2 })
+    setTimeout(() => popup.setLngLat([lng, lat]).addTo(mapRef.current), 600)
+  }, [selectedId])
 
   return (
     <div className="w-full h-full relative">

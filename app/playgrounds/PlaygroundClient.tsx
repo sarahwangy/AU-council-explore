@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 
 const PlaygroundMapView = dynamic(() => import('./PlaygroundMapView'), { ssr: false })
@@ -27,6 +27,7 @@ export function PlaygroundClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [filters, setFilters] = useState({ fenced: false, shaded: false, bbq: false, toilet: false })
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchSuggestions = useCallback((val: string) => {
@@ -61,14 +62,22 @@ export function PlaygroundClient() {
     }
   }
 
-  const filtered = results
-    ? results.filter(p =>
-        (!filters.fenced || p.fenced === true) &&
-        (!filters.shaded || p.shaded === true) &&
-        (!filters.bbq || p.hasBbq === true) &&
-        (!filters.toilet || p.hasToilet === true)
-      )
-    : null
+  const filtered = useMemo(
+    () => results
+      ? results.filter(p =>
+          (!filters.fenced || p.fenced === true) &&
+          (!filters.shaded || p.shaded === true) &&
+          (!filters.bbq || p.hasBbq === true) &&
+          (!filters.toilet || p.hasToilet === true)
+        )
+      : null,
+    [results, filters]
+  )
+
+  const mapItems = useMemo(
+    () => filtered?.map(p => ({ id: p.id, name: p.name ?? (p.suburb ? `Playground – ${p.suburb}` : 'Playground'), lat: p.lat, lng: p.lng })) ?? [],
+    [filtered]
+  )
 
   const FeatureBadge = ({ label, value }: { label: string; value: boolean | null }) => {
     if (value === null) return null
@@ -140,7 +149,8 @@ export function PlaygroundClient() {
             <div className="lg:w-3/5 shrink-0 rounded-2xl overflow-hidden border border-green-100 shadow-sm h-105 lg:h-155">
               <PlaygroundMapView
                 centerLat={selectedLat} centerLng={selectedLng}
-                items={filtered.map(p => ({ id: p.id, name: p.name ?? 'Playground', lat: p.lat, lng: p.lng }))}
+                selectedId={selectedId}
+                items={mapItems}
               />
             </div>
           )}
@@ -154,12 +164,14 @@ export function PlaygroundClient() {
               <div className="space-y-2">
                 <p className="text-sm text-gray-500 mb-2">{filtered.length} playground{filtered.length !== 1 ? 's' : ''} within 5km</p>
                 {filtered.map((p, i) => (
-                  <div key={p.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:border-green-200 hover:shadow-md transition-all p-3">
+                  <div key={p.id} onClick={() => setSelectedId(p.id)} className={`bg-white rounded-xl border shadow-sm hover:border-green-200 hover:shadow-md transition-all p-3 cursor-pointer ${selectedId === p.id ? 'border-green-400 ring-1 ring-green-300' : 'border-gray-100'}`}>
                     <div className="flex gap-3 items-center">
                       <div className="shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">{i + 1}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="font-medium text-gray-900 text-sm">{p.name ?? 'Unnamed Playground'}</p>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {p.name ?? <span className="text-gray-400 font-normal">Playground #{i + 1}</span>}
+                          </p>
                           {p.distance !== undefined && (
                             <span className="text-xs text-gray-400 shrink-0">
                               {p.distance < 1 ? `${Math.round(p.distance * 1000)}m` : `${p.distance.toFixed(1)}km`}

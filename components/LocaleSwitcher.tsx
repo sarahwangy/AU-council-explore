@@ -18,7 +18,7 @@ export function LocaleSwitcher({ current }: { current: string }) {
     <button
       onClick={toggle}
       disabled={pending}
-      className="text-sm opacity-80 hover:opacity-100 transition-opacity disabled:opacity-50 border border-white/30 rounded px-2 py-0.5"
+      className="text-sm opacity-80 hover:opacity-100 transition-opacity disabled:opacity-50 border border-white/30 rounded px-2 py-0.5 whitespace-nowrap"
     >
       {current === 'en' ? LABELS.zh : LABELS.en}
     </button>

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
@@ -39,6 +39,7 @@ export function ChildcareClient() {
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [showMap, setShowMap] = useState(true)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchSuggestions = useCallback((val: string) => {
@@ -73,9 +74,17 @@ export function ChildcareClient() {
     }
   }
 
-  const filtered = results
-    ? typeFilter === 'All' ? results : results.filter(r => r.serviceType === typeFilter)
-    : null
+  const filtered = useMemo(
+    () => results
+      ? typeFilter === 'All' ? results : results.filter(r => r.serviceType === typeFilter)
+      : null,
+    [results, typeFilter]
+  )
+
+  const mapItems = useMemo(
+    () => filtered?.filter(r => r.lat && r.lng).map(r => ({ id: r.id, name: r.name, lat: r.lat!, lng: r.lng!, type: r.serviceType ?? '', rating: r.qualityRating ?? '' })) ?? [],
+    [filtered]
+  )
 
   return (
     <div>
@@ -169,14 +178,8 @@ export function ChildcareClient() {
                 <MapView
                   centerLat={selectedLat}
                   centerLng={selectedLng}
-                  items={filtered.filter(r => r.lat && r.lng).map(r => ({
-                    id: r.id,
-                    name: r.name,
-                    lat: r.lat!,
-                    lng: r.lng!,
-                    type: r.serviceType ?? '',
-                    rating: r.qualityRating ?? '',
-                  }))}
+                  selectedId={selectedId}
+                  items={mapItems}
                 />
               </div>
             </div>
@@ -194,7 +197,7 @@ export function ChildcareClient() {
               <div className="space-y-3">
                 <p className="text-sm text-gray-500 mb-2">{filtered.length} centre{filtered.length !== 1 ? 's' : ''} within 5km</p>
                 {filtered.map((c, i) => (
-                  <div key={c.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-md transition-all p-4">
+                  <div key={c.id} onClick={() => setSelectedId(c.id)} className={`bg-white rounded-xl border shadow-sm hover:border-purple-200 hover:shadow-md transition-all p-4 cursor-pointer ${selectedId === c.id ? 'border-purple-400 ring-1 ring-purple-300' : 'border-gray-100'}`}>
                     <div className="flex gap-3 items-start">
                       <div className="shrink-0 w-7 h-7 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
                         {i + 1}
