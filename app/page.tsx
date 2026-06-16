@@ -286,7 +286,9 @@ export default function HomePage() {
   const [showUniversities, setShowUniversities] = useState(false)
   const [activeRegion, setActiveRegion] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string; state: string; region: string | null }[]>([])
   const [legendOpen, setLegendOpen] = useState(false)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [activeState, setActiveState] = useState<string>('VIC')
   const geojsonByState = useRef<Record<string, unknown>>({})
   const councilsRef = useRef<Council[]>([])
@@ -443,6 +445,40 @@ export default function HomePage() {
       }
     })
   }, [])
+
+  const flyToCouncilInState = useCallback(async (slug: string, state: string) => {
+    // Switch state first if needed
+    if (state !== activeState) {
+      await switchState(state)
+    }
+    // Poll until GeoJSON is available (up to 4 seconds)
+    if (state !== 'VIC') {
+      for (let i = 0; i < 40; i++) {
+        if (geojsonByState.current[state]) break
+        await new Promise(r => setTimeout(r, 100))
+      }
+    }
+    // Now fly using the geojson for that state
+    const geojson = state === 'VIC'
+      ? geojsonRef.current
+      : (geojsonByState.current[state] as typeof geojsonRef.current | undefined) ?? null
+    if (!geojson || !mapRef.current) return
+    const feature = geojson.features.find((f: { properties: Record<string, string> }) => f.properties.lga_slug === slug)
+    if (!feature) return
+    import('mapbox-gl').then(({ default: mapboxgl }) => {
+      const map = mapRef.current as mapboxgl.Map
+      let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+      function scanCoords(coords: unknown[]) {
+        if (typeof coords[0] === 'number') {
+          const [lng, lat] = coords as number[]
+          if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng
+          if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat
+        } else { for (const c of coords) scanCoords(c as unknown[]) }
+      }
+      scanCoords(feature.geometry.coordinates)
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 60, duration: 800 })
+    })
+  }, [activeState, switchState])
 
   const flyToCouncil = useCallback((slug: string) => {
     if (!mapRef.current) return
@@ -703,30 +739,43 @@ export default function HomePage() {
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
           <input
             type="text"
-            placeholder="Search council…"
+            placeholder="Search council (all Australia)…"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => {
+              const val = e.target.value
+              setSearchQuery(val)
+              if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+              if (val.length < 2) { setSearchResults([]); return }
+              searchDebounceRef.current = setTimeout(() => {
+                fetch(`/api/councils?search=${encodeURIComponent(val)}`)
+                  .then(r => r.json())
+                  .then(data => setSearchResults(data))
+              }, 250)
+            }}
             className="w-full pl-8 pr-3 py-2.5 rounded-xl shadow-lg text-sm bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/40"
           />
-          {searchQuery && (
-            <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-56 overflow-y-auto z-20">
-              {councils
-                .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                .slice(0, 8)
-                .map(c => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-left"
-                    onClick={() => { flyToCouncil(c.id); setSearchQuery('') }}
-                  >
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: (activeState === 'VIC' ? REGION_COLORS[c.region] : regionColors[c.region]) ?? '#e5e7eb' }} />
-                    <span>{c.name}</span>
-                  </button>
-                ))}
-              {councils.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                <p className="px-3 py-2 text-sm text-gray-400">No councils found</p>
-              )}
+          {searchQuery && searchResults.length > 0 && (
+            <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 max-h-64 overflow-y-auto z-20">
+              {searchResults.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSearchResults([])
+                    flyToCouncilInState(c.id, c.state)
+                  }}
+                >
+                  <span className="text-xs font-bold text-white bg-gray-400 rounded px-1 py-0.5 shrink-0">{c.state}</span>
+                  <span>{c.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {searchQuery.length >= 2 && searchResults.length === 0 && (
+            <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-100 z-20">
+              <p className="px-3 py-2 text-sm text-gray-400">No councils found</p>
             </div>
           )}
         </div>
