@@ -22,16 +22,63 @@
 
 ## 这个平台能做什么？
 
-一张覆盖全澳洲的交互式地图，点进任何一个 council，你可以看到：
+一张覆盖全澳洲的交互式地图，点进任何一个 council，你可以看到人口数据、图书馆活动、托儿所、医院、游乐场、学区。
 
-- 📚 图书馆活动日历（亲子活动、工作坊、展览）
-- 👶 托儿所列表，含 ACECQA 官方质量评级
-- 🏥 周边医院和急诊信息
-- 🛝 游乐场位置与设施筛选（围栏、遮阳、BBQ）
-- 📊 人口数据：年龄分布、教育程度、语言、房价中位数
-- 🏫 学区查询——输入地址，看归属哪个学区
+---
 
-还可以多个 council 并排对比，以及用 AI 自然语言搜索——"悉尼附近哪个区托儿所最多？"
+## 页面介绍
+
+### 🗺️ 交互地图
+
+![地图首页 — 全澳洲 council 一张图](../assets/map-page-1.png)
+
+全澳洲所有 council 按州着色，点击任意区域飞到边界。顶部 tab 切换州，搜索框支持全国 council 名搜索。
+
+### 🏛️ Council 列表 & 详情页
+
+![Council 列表](../assets/councils-page-1.png)
+
+![Council 详情 — 人口、活动、设施](../assets/councils-detail-page.png)
+
+按州浏览所有 council。详情页展示人口、主要语言、教育程度、房价中位数，以及 Liveability Score 的分类细分。
+
+### 📅 活动日历
+
+![活动页 — 全澳图书馆活动汇总](../assets/events-page-1.png)
+
+汇聚全澳 50+ 图书馆系统的活动——亲子故事时间、工作坊、展览、社区课程。按州、council 或日期筛选。
+
+### ⚖️ 对比页
+
+![对比页 — 多 council 并排比较](../assets/compare-page.png)
+
+选择 2–3 个 council 并排对比：人口、Liveability Score、托儿所密度、医院覆盖、图书馆数量。
+
+### 👶 托儿所 / 🏥 医院 / 🛝 游乐场
+
+![托儿所搜索](../assets/childcare-finder-page-2.png)
+
+![医院搜索](../assets/hospital-finder-page-2.png)
+
+![游乐场搜索](../assets/playground-finder-page.png)
+
+三个生活宜居页，均为地图 + 列表双视图。托儿所数据来自 ACECQA 全国注册库（VIC 6,303 条）。医院可筛选急诊。游乐场可筛选围栏、遮阳、BBQ、厕所。
+
+### 🏫 学区查询 & ★ 我的活动
+
+![学区查询](../assets/schools-page-1.png)
+
+![我的活动 — 收藏 council 的活动推送](../assets/my-events-page.png)
+
+输入地址查归属学区（VIC/NSW/QLD）。收藏喜欢的 council，"我的活动"只展示这些地方的近期活动。
+
+### ✨ AI 搜索
+
+![AI 搜索 — 自然语言提问](../assets/ai-search-page.png)
+
+直接用中文或英文问问题：*"墨尔本附近哪个区的托儿所密度最高？"* Claude Haiku 读取真实数据，返回带引用的结构化对比答案。
+
+---
 
 **这是做给新移民、换城市的家庭、以及所有想认真研究"住哪"这件事的人的工具。**
 

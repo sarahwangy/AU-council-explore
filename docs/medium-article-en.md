@@ -14,13 +14,63 @@ One week later: **Australia Council Explorer**, an interactive map that aggregat
 
 Moving to Australia means navigating a fragmented web of local government websites. Want to find a childcare centre? That's one site. Nearest hospital? Another. Local playgrounds? Third one. Each with its own format, no map view, no way to compare.
 
-So I built a single platform where you can:
+So I built a single platform.
 
-- Browse every Australian council on an interactive map
-- See upcoming library events, childcare centres, hospitals, and playgrounds
-- Compare suburbs side-by-side on a Liveability Score
-- Enter any address and check which school zone you're in
-- Search across all of Australia at once
+---
+
+## Pages
+
+### 🗺️ Interactive Map
+
+![Map page — all Australian councils on one map](../assets/map-page-1.png)
+
+Australia-wide Mapbox map. Every council in every state, coloured by region. Click any council to fly to it. Switch states with the tab bar. Search any council name across all of Australia.
+
+### 🏛️ Councils & Detail
+
+![Councils list](../assets/councils-page-1.png)
+
+![Council detail — demographics, events, facilities](../assets/councils-detail-page.png)
+
+Browse all councils by state. Each detail page shows population, languages spoken, education levels, median house price, and a Liveability Score broken down by category.
+
+### 📅 Events
+
+![Events page — upcoming library events across Australia](../assets/events-page-1.png)
+
+Upcoming events aggregated from 50+ library systems — storytime, workshops, exhibitions. Filter by state, council, or date.
+
+### ⚖️ Compare
+
+![Compare page — side-by-side council comparison](../assets/compare-page.png)
+
+Select 2–3 councils and compare side-by-side across population, Liveability Score, childcare density, hospital coverage, and library count.
+
+### 👶 Childcare / 🏥 Hospitals / 🛝 Playgrounds
+
+![Childcare finder](../assets/childcare-finder-page-2.png)
+
+![Hospital finder](../assets/hospital-finder-page-2.png)
+
+![Playground finder](../assets/playground-finder-page.png)
+
+Three liveability pages, all with map + list view. Childcare data comes from the ACECQA national register (6,303 VIC services). Hospitals filter by emergency availability. Playgrounds filter by amenities (fenced, shaded, BBQ, toilets).
+
+### 🏫 Schools & ★ My Events
+
+![School zone checker](../assets/schools-page-1.png)
+
+![My Events — personalised feed from saved councils](../assets/my-events-page.png)
+
+School zone checker: enter any address, see which zone you're in (VIC, NSW, QLD). My Events: star favourite councils to build a personalised upcoming event feed.
+
+### ✨ AI Search
+
+![AI search — natural language council queries](../assets/ai-search-page.png)
+
+Ask in plain English: *"Which council near Melbourne has the best childcare density?"* Claude Haiku returns a structured comparison with citations to real data.
+
+---
 
 **This is for new immigrants, families moving cities, anyone trying to figure out where to actually live.**
 

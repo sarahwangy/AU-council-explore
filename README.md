@@ -37,6 +37,112 @@ Every council has its own website in a different format, and the ABS data is bur
 
 ---
 
+## Pages
+
+### 🗺️ Interactive Map
+
+![Map page — all Australian councils coloured by state, click to explore](./assets/map-page-1.png)
+
+Australia-wide Mapbox map with all councils coloured by state. Click any council to fly to its boundary and open the detail page. Switch between states using the tab bar. Search any council name across all of Australia.
+
+---
+
+### 🏛️ Councils List
+
+![Councils list — browse and filter by state or region](./assets/councils-page-1.png)
+
+Browse all councils grouped by state. Filter by region, search by name. Each card shows population, area size, and Liveability Score at a glance.
+
+---
+
+### 📋 Council Detail
+
+![Council detail page — demographics, events, and facilities](./assets/councils-detail-page.png)
+
+Deep-dive into any council: population, languages spoken, education levels, median house price, library events, and nearby facilities. Liveability Score breaks down across childcare, hospitals, libraries, and playgrounds.
+
+---
+
+### 📅 Events Calendar
+
+![Events page — upcoming library events across Australia](./assets/events-page-1.png)
+
+Upcoming events aggregated from 50+ library systems across all states — storytime, workshops, exhibitions, community programs. Filter by state, council, or date.
+
+---
+
+### ⚖️ Compare
+
+![Compare page — side-by-side council comparison](./assets/compare-page.png)
+
+Select 2–3 councils and compare them side-by-side across population, Liveability Score, childcare density, hospital coverage, and library count.
+
+---
+
+### 📚 Libraries
+
+![Libraries page — find libraries near you by state](./assets/libraries-page-1.png)
+
+Browse libraries by state, see opening hours and today's open/closed status, and search nearby libraries from any address.
+
+---
+
+### 🏫 Schools & School Zones
+
+![Schools page — school zone checker with address search](./assets/schools-page-1.png)
+
+Enter any address to check which school zone you're in. VIC, NSW, and QLD zone data with polygon map overlay.
+
+---
+
+### 👶 Childcare Finder
+
+![Childcare finder — 6,303 VIC services from ACECQA](./assets/childcare-finder-page-2.png)
+
+Search childcare centres from the ACECQA national register. Filter by suburb, see quality ratings, operating hours, and map view. VIC data covers 6,303 official services.
+
+---
+
+### 🏥 Hospital Finder
+
+![Hospital finder — filter by emergency availability](./assets/hospital-finder-page-2.png)
+
+Find hospitals and health facilities near any location. Filter by emergency department availability. Click any hospital to fly to it on the map.
+
+---
+
+### 🛝 Playground Finder
+
+![Playground finder — filter by amenities](./assets/playground-finder-page.png)
+
+Browse playgrounds with amenity filters: fenced, shaded, BBQ, toilets nearby. 6,054 VIC playgrounds with 97.9% named via Nominatim reverse geocoding.
+
+---
+
+### ★ My Events
+
+![My Events — saved councils and upcoming events](./assets/my-events-page.png)
+
+Star your favourite councils and libraries to build a personalised event feed. Shows only upcoming events from your saved locations, grouped by date.
+
+---
+
+### ✨ AI Search
+
+![AI search — natural language queries about any council](./assets/ai-search-page.png)
+
+Ask anything in natural language: "Which council near Melbourne has the best childcare density?" Claude Haiku reads your question and returns a structured comparison with citations to real data.
+
+---
+
+### 🔗 Data Sources
+
+![Data sources page — all 50+ sources listed by state](./assets/data-sources-page-1.png)
+
+Every data source used in the platform, organised by state — 50+ library links, government datasets, and API references. CSV download available.
+
+---
+
 ## Architecture
 
 ```mermaid
