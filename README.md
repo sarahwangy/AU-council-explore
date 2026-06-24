@@ -4,6 +4,8 @@ An open-source web app that aggregates local council data across **all of Austra
 
 **Live demo:** [https://au-council-explore.vercel.app](https://au-council-explore.vercel.app) · **GitHub:** [sarahwangy/AU-council-explore](https://github.com/sarahwangy/AU-council-explore)
 
+![AU Council Explorer demo](./assets/au-council-life-explore.gif)
+
 ---
 
 ## Why I Built This
