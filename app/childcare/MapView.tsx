@@ -86,7 +86,8 @@ export default function MapView({ centerLat, centerLng, selectedId, items }: Pro
     const entry = popupsRef.current.get(selectedId)
     if (!entry) return
     const map = mapRef.current as { flyTo: (opts: unknown) => void }
-    const { popup, lat, lng } = entry as { popup: { setLngLat: (c: [number, number]) => unknown; addTo: (m: unknown) => void; remove: () => void }; lat: number; lng: number }
+    type PopupLike = { setLngLat: (c: [number, number]) => PopupLike; addTo: (m: unknown) => void; remove: () => void }
+    const { popup, lat, lng } = entry as { popup: PopupLike; lat: number; lng: number }
     popupsRef.current.forEach(e => (e as typeof entry & { popup: { remove: () => void } }).popup.remove())
     map.flyTo({ center: [lng, lat], zoom: 15, speed: 1.2 })
     setTimeout(() => popup.setLngLat([lng, lat]).addTo(mapRef.current as unknown), 600)
