@@ -43,6 +43,3 @@ next-env.d.ts
 
 /app/generated/prisma
 
-# Local docs (not for GitHub)
-docs/medium-article-zh.md
-docs/medium-article-en.md
