@@ -40,7 +40,7 @@ export function AppNav({ locale }: { locale: string }) {
   const liveabilityActive = ['/childcare', '/playgrounds', '/hospitals'].some(p => pathname.startsWith(p))
 
   return (
-    <nav className="bg-(--color-primary) text-white">
+    <nav className="sticky top-0 z-50 bg-(--color-primary) text-white">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="font-bold text-lg tracking-tight shrink-0">
           {t('title')}
