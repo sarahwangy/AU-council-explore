@@ -4,6 +4,21 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// In-memory rate limiter: max 5 requests per IP per minute
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 })
+    return true
+  }
+  if (entry.count >= 5) return false
+  entry.count++
+  return true
+}
+
 function extractLocation(q: string): string[] {
   const knownSuburbs = [
     'melbourne', 'richmond', 'fitzroy', 'collingwood', 'hawthorn', 'camberwell',
@@ -30,6 +45,11 @@ function normalizeQuery(q: string) {
 
 export async function POST(req: NextRequest) {
   try {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 })
+  }
+
   const { query } = await req.json() as { query: string }
   if (!query?.trim()) return NextResponse.json({ error: 'No query' }, { status: 400 })
 
