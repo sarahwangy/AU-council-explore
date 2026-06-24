@@ -4,14 +4,14 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// In-memory rate limiter: max 5 requests per IP per minute
+// In-memory rate limiter: max 5 requests per IP per 5 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
   const entry = rateLimitMap.get(ip)
   if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 })
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 5 * 60_000 })
     return true
   }
   if (entry.count >= 5) return false
