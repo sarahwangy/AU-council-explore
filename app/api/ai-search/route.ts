@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import Anthropic from '@anthropic-ai/sdk'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 // In-memory rate limiter: max 5 requests per IP per 5 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
@@ -45,6 +43,7 @@ function normalizeQuery(q: string) {
 
 export async function POST(req: NextRequest) {
   try {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   if (!checkRateLimit(ip)) {
     return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 })
